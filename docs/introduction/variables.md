@@ -66,7 +66,6 @@ $name = 25;
 $name = strval($name); // $name est maintenant une chaîne de caractères
 ```
 
-
 ### Constantes
 
 En PHP, une constante est une valeur qui ne peut pas être modifiée une fois qu'elle a été définie. Les constantes sont utiles pour stocker des valeurs qui ne doivent pas être modifiées au cours de l'exécution du script, comme des valeurs de configuration ou des constantes mathématiques.
@@ -217,3 +216,70 @@ Voici un exemple de fermeture de ressource :
 ```php
 fclose($file);
 ```
+
+### Les objets
+
+En PHP, une classe est un modèle qui définit les propriétés et les comportements d'un objet. Elle peut être utilisée pour créer de nouveaux objets de ce type.
+
+Un objet est une instance d'une classe. Il a ses propres propriétés et comportements, qui sont définis par la classe à laquelle il appartient.
+
+Voici un exemple simple de définition d'une classe et de création d'un objet en PHP :
+
+```php
+class Voiture {
+  public $marque;
+  public $couleur;
+  public $nb_roues;
+
+  public function klaxonner() {
+    echo "Tut tut !\n";
+  }
+}
+
+$ma_voiture = new Voiture();
+$ma_voiture->marque = "Peugeot";
+$ma_voiture->couleur = "bleu";
+$ma_voiture->nb_roues = 4;
+
+echo "Ma voiture est une " . $ma_voiture->marque . " de couleur " . $ma_voiture->couleur . "\n";
+$ma_voiture->klaxonner();
+```
+
+Dans cet exemple, la classe Voiture définit trois propriétés (marque, couleur et nb_roues) et une méthode (klaxonner). Nous créons un objet de cette classe en utilisant la syntaxe `$ma_voiture = new Voiture();`, puis nous définissons les valeurs de ses propriétés et nous appelons sa méthode.
+
+Il est important de noter que les propriétés et les méthodes d'un objet sont accessibles en utilisant l'opérateur flèche `->`, comme dans cet exemple :
+
+```php
+$ma_voiture->marque = "Peugeot";
+$ma_voiture->couleur = "bleu";
+$ma_voiture->nb_roues = 4;
+$ma_voiture->klaxonner();
+```
+
+Il existe des classes prédéfinies dans PHP, comme DateTime, PDO, etc. Vous pouvez également créer vos propres classes et les utiliser dans vos scripts PHP.
+
+Par exemplen, le PDO (PHP Data Objects) est une classe de base de PHP qui permet de se connecter à une base de données et d'exécuter des requêtes SQL. Elle offre une interface commune pour accéder à différents types de bases de données (comme MySQL, PostgreSQL, Oracle, etc.), ce qui facilite l'écriture de code portable.
+
+Voici comment utiliser la classe PDO pour se connecter à une base de données MySQL et exécuter une requête de sélection :
+
+```php
+try {
+  // Connexion à la base de données
+  $pdo = new PDO("mysql:host=localhost;dbname=nom_de_la_base", "nom_d_utilisateur", "mot_de_passe");
+
+  // Exécution d'une requête de sélection
+  $stmt = $pdo->query("SELECT * FROM utilisateurs WHERE nom = 'John'");
+
+  // Récupération et affichage des résultats
+  while ($row = $stmt->fetch()) {
+    echo $row['nom'] . " " . $row['prenom'] . "\n";
+  }
+} catch (PDOException $e) {
+  // Gestion des erreurs
+  echo "Erreur : " . $e->getMessage() . "\n";
+}
+```
+
+Dans cet exemple, nous créons un objet PDO en passant les informations de connexion à la base de données dans le constructeur de la classe. Nous utilisons ensuite la méthode query pour exécuter une requête de sélection, puis nous récupérons les résultats en utilisant la méthode fetch. Enfin, nous gérons les erreurs en utilisant un bloc try/catch.
+
+Il existe de nombreuses autres méthodes et propriétés de la classe PDO qui peuvent être utilisées pour exécuter d'autres types de requêtes, préparer des requêtes à l'avance, obtenir des informations sur la base de données, etc. Vous pouvez en savoir plus sur la classe PDO dans la documentation de PHP.
