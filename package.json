@@ -10,6 +10,7 @@
   "author": "opmvpc",
   "license": "MPL-2.0",
   "devDependencies": {
+    "@vuepress/plugin-register-components": "^2.0.0-beta.59",
     "@vuepress/plugin-search": "^2.0.0-beta.59",
     "vuepress": "^2.0.0-beta.59"
   }
