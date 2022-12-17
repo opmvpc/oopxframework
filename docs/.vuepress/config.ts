@@ -1,10 +1,16 @@
 import { defaultTheme, defineUserConfig } from "vuepress";
+import { searchPlugin } from "@vuepress/plugin-search";
 
 export default defineUserConfig({
   lang: "fr-FR",
   title: "POO x Framework",
   description: "Cours de POO et Framework. PHP, Laravel.",
   theme: defaultTheme({
+    locales: {
+      "/": {
+        selectLanguageName: "Français",
+      },
+    },
     navbar: [
       {
         text: "Accueil",
@@ -45,4 +51,13 @@ export default defineUserConfig({
       ],
     },
   }),
+  plugins: [
+    searchPlugin({
+      locales: {
+        "/": {
+          placeholder: "Rechercher",
+        },
+      },
+    }),
+  ],
 });
