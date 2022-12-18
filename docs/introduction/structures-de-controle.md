@@ -319,23 +319,3 @@ foreach ($tableau as $cle => $valeur) {
 ```
 
 Dans cet exemple, la boucle `foreach` parcourt chaque élément du tableau associatif et affiche la clé et la valeur de chaque élément.
-
-## Exercices
-
-### Exercice 1
-
-Créez un tableau et ajoutez-y les entiers de `1` à `10` en utilisant une boucle `for`. Affichez ensuite le tableau à l'aide de la fonction `dd`.
-
-::: tip
-La fonction `dd` est une fonction de débogage qui affiche le contenu d'une variable et arrête l'exécution du script. Elle est utile pour afficher le contenu d'un tableau ou d'un objet. Elle est disponible dans Laravel, dans Symfony et dans l'éditeur de code si dessous.
-:::
-
-### Exercice 2
-
-1. Créez un tableau à deux dimensions appelé "tableauSoiree" qui contiendra les noms et les boissons préférées de 5 invités à une soirée. Par exemple, pour l'invité "Marie", sa boisson préférée serait "un verre de vin rouge".
-
-1. Affichez le tableau "tableauSoiree" en utilisant une boucle "for". Pour chaque invité, affichez son nom et sa boisson préférée sous la forme suivante : "L'invité [NOM DE L'INVITÉ] préfère [BOISSON PRÉFÉRÉE DE L'INVITÉ]".
-
-1. Modifiez le tableau "tableauSoiree" en utilisant une boucle "while". Pour chaque invité, remplacez sa boisson préférée par "un cocktail" s'il a moins de 30 ans, ou par "un whisky" s'il a 30 ans ou plus.
-
-1. Affichez à nouveau le tableau "tableauSoiree" en utilisant une boucle "foreach". Pour chaque invité, affichez son nom et sa nouvelle boisson préférée sous la forme suivante : "L'invité [NOM DE L'INVITÉ] préfère maintenant [NOUVELLE BOISSON PRÉFÉRÉE DE L'INVITÉ]".
