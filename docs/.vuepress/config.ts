@@ -15,7 +15,7 @@ export default defineUserConfig({
   },
   theme: defaultTheme({
     lastUpdatedText: "Dernière mise à jour",
-    contributorsText: "Contributeur",
+    contributors: false,
     backToHome: "Retour à l'accueil",
     notFound: [
       "Cette page n'existe pas",
