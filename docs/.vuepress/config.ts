@@ -8,12 +8,14 @@ export default defineUserConfig({
   lang: "fr-FR",
   title: "POO x Framework",
   description: "Cours de POO et Framework. PHP, Laravel.",
+  head: [["link", { rel: "icon", href: "/img/ico.png" }]],
   locales: {
     "/": {
       lang: "fr-FR",
     },
   },
   theme: defaultTheme({
+    logo: "/img/logo.png",
     lastUpdatedText: "Dernière mise à jour",
     contributors: false,
     backToHome: "Retour à l'accueil",

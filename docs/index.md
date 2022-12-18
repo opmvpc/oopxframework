@@ -1,5 +1,7 @@
 # Programmation orienté objet et Framework
 
+<img :src="'/img/logo.png'" alt="Logo" style="margin: 75px auto; display: block; width: 350px;">
+
 ## Objectifs du cours - Programme
 
 **L’étudiant sera capable :**
@@ -38,17 +40,22 @@ Pour la détermination du degré de maîtrise, il sera tenu compte des critères
 ## Évaluations
 
 ### Évaluation continue
+
 Des évaluations continuelles seront effectuées tout au long du cours. Elles porteront sur les connaissances acquises et les compétences développées.
- - des interros non notées
- - 2 interros notées
+
+- des interros non notées
+- 2 interros notées
+
 ### Évaluation finale
- - Un projet de developpement d'une application web en utilisant un framework MVC
- - Basé sur un cahier des charges qui vous sera remis
- - Défense orale du projet
+
+- Un projet de developpement d'une application web en utilisant un framework MVC
+- Basé sur un cahier des charges qui vous sera remis
+- Défense orale du projet
 
 ### Répartition des notes
- - 40% : Interrogations notées
- - 60% : Projet
+
+- 40% : Interrogations notées
+- 60% : Projet
 
 ## Outils
 
