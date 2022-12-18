@@ -232,7 +232,7 @@ class Voiture {
   public $nb_roues;
 
   public function klaxonner() {
-    echo "Tut tut !\n";
+- echo "Tut tut !\n";
   }
 }
 
@@ -272,7 +272,7 @@ try {
 
   // Récupération et affichage des résultats
   while ($row = $stmt->fetch()) {
-    echo $row['nom'] . " " . $row['prenom'] . "\n";
+- echo $row['nom'] . " " . $row['prenom'] . "\n";
   }
 } catch (PDOException $e) {
   // Gestion des erreurs
@@ -283,3 +283,23 @@ try {
 Dans cet exemple, nous créons un objet PDO en passant les informations de connexion à la base de données dans le constructeur de la classe. Nous utilisons ensuite la méthode query pour exécuter une requête de sélection, puis nous récupérons les résultats en utilisant la méthode fetch. Enfin, nous gérons les erreurs en utilisant un bloc try/catch.
 
 Il existe de nombreuses autres méthodes et propriétés de la classe PDO qui peuvent être utilisées pour exécuter d'autres types de requêtes, préparer des requêtes à l'avance, obtenir des informations sur la base de données, etc. Vous pouvez en savoir plus sur la classe PDO dans la documentation de PHP.
+
+## Variables pré-définies
+
+Il existe un certain nombre de variables pré-définies qui sont disponibles dans tous les scripts et qui contiennent des informations sur l'environnement d'exécution, le serveur, la requête HTTP, les variables de session, etc. Voici une liste de quelques-unes des variables pré-définies les plus couramment utilisées en PHP :
+
+- $\_SERVER : contient des informations sur l'environnement d'exécution du script, comme le nom du serveur, le nom du script en cours d'exécution, le chemin du script, etc.
+- $\_GET : contient les données envoyées dans la requête HTTP via la méthode GET.
+- $\_POST : contient les données envoyées dans la requête HTTP via la méthode POST.
+- $\_FILES : contient les informations sur les fichiers téléchargés via une requête HTTP.
+- $\_COOKIE : contient les informations sur les cookies envoyés avec la requête HTTP.
+- $\_SESSION : contient les informations sur les variables de session en cours.
+- $\_ENV : contient les informations sur les variables d'environnement du serveur.
+
+Voici un exemple d'utilisation de la variable pré-définie `$_SERVER` pour afficher le nom du serveur :
+
+```php
+echo 'Le nom du serveur est : ' . $_SERVER['SERVER_NAME'];
+```
+
+Il existe également d'autres variables pré-définies, comme `$_REQUEST`, `$_GLOBALS`, etc. Vous pouvez trouver la liste complète des variables pré-définies en PHP dans la documentation officielle de PHP.

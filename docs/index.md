@@ -49,3 +49,16 @@ Des évaluations continuelles seront effectuées tout au long du cours. Elles po
 ### Répartition des notes
  - 40% : Interrogations notées
  - 60% : Projet
+
+## Outils
+
+### Interpreteurs de code PHP en ligne
+
+- [https://3v4l.org/](https://3v4l.org/)
+- [https://laravelplayground.com/](https://laravelplayground.com/)
+
+### Outils de développement
+
+- Visual Studio Code
+- PHPStorm
+- Autres IDE ou éditeurs de code

@@ -85,7 +85,7 @@ Vous pouvez parcourir des tableaux a plusieurs dimensions en utilisant une boucl
 ```php
 foreach ($tableau as $ligne) {
   foreach ($ligne as $valeur) {
-- echo $valeur;
+    echo $valeur;
   }
 }
 ```
@@ -95,7 +95,7 @@ Ou alors, en utilisant une boucle `for` imbriquée :
 ```php
 for ($i = 0; $i < count($tableau); $i++) {
   for ($j = 0; $j < count($tableau[$i]); $j++) {
-- echo $tableau[$i][$j];
+    echo $tableau[$i][$j];
   }
 }
 ```
