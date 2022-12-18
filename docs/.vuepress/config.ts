@@ -58,7 +58,7 @@ export default defineUserConfig({
             "/introduction/variables.md",
             "/introduction/operateurs.md",
             "/introduction/structures-de-controle.md",
-            // "/introduction/fonctions-de-php.md",
+            "/introduction/fonctions-de-php.md",
             // "/introduction/les-chaines-de-caracteres.md",
             // "/introduction/nos-fonctions.md",
             // "/introduction/les-tableaux.md",
