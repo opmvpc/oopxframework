@@ -2,19 +2,21 @@
 
 Voici quelques éléments de syntaxe de base de PHP :
 
-- Les instructions PHP sont inclues dans des balises `<?php` et `?>`. Tout ce qui se trouve entre ces balises sera exécuté comme du code PHP.
+- Les instructions sont inclues dans des balises `<?php` et `?>`. Tout ce qui se trouve entre ces balises sera exécuté comme du code PHP.
 
-- Les commentaires en PHP sont précédés de `//` ou `#` pour une ligne ou de `/*` et `*/` pour plusieurs lignes.
+- Dans un fichier qui ne contient que du code PHP, la balise de fermeture `?>` peut être omise.
 
-- Les variables en PHP sont précédées de $. Leur nom peut contenir des lettres, des chiffres et le caractère underscore, mais il ne doit pas commencer par un chiffre.
+- Les commentaires sont précédés de `//` ou `#` pour une ligne ou de `/*` et `*/` pour plusieurs lignes.
 
-- Les types de données en PHP incluent les nombres (entiers et flottants), les chaînes de caractères, les booléens, les tableaux et les objets.
+- Les variables sont précédées de $. Leur nom peut contenir des lettres, des chiffres et le caractère underscore, mais il ne doit pas commencer par un chiffre.
 
-- Les opérateurs en PHP incluent l'addition (+), la soustraction (-), la multiplication (\*), la division (/), le modulo (%), l'opérateur d'affectation (=) et bien d'autres encore.
+- Les types de données incluent les nombres (entiers et flottants), les chaînes de caractères, les booléens, les tableaux et les objets.
 
-- Les structures de contrôle de flux en PHP incluent les instructions if, else, elseif, switch, while, do while et for.
+- Les opérateurs incluent l'addition (+), la soustraction (-), la multiplication (\*), la division (/), le modulo (%), l'opérateur d'affectation (=) et bien d'autres encore.
 
-- Les fonctions en PHP sont définies avec la fonction function suivie du nom de la fonction et de ses paramètres entre parenthèses. Elles sont appelées en utilisant leur nom suivi de parenthèses et des arguments éventuels.
+- Les structures de contrôle de flux incluent les instructions if, else, elseif, switch, while, do while et for.
+
+- Les fonctions sont définies avec la fonction function suivie du nom de la fonction et de ses paramètres entre parenthèses. Elles sont appelées en utilisant leur nom suivi de parenthèses et des arguments éventuels.
 
 Voici un exemple simple de code PHP qui utilise quelques-uns de ces éléments de syntaxe :
 

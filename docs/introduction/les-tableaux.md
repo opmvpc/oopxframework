@@ -122,9 +122,9 @@ Voici une liste non exhaustive de fonctions utiles pour manipuler des tableaux e
 
 ## Fonctions de plus haut ordre
 
-Les fonctions de haut ordre sont des fonctions qui prennent une ou plusieurs fonctions en argument, ou qui retournent une fonction. Elles peuvent être très utiles pour manipuler des tableaux en PHP, car elles permettent de traiter les éléments d'un tableau de manière très flexible et concise.
+Les fonctions de haut ordre sont des fonctions qui prennent une ou plusieurs fonctions en argument, ou qui retournent une fonction. Elles peuvent être très utiles pour manipuler des tableaux, car elles permettent d'en traiter les éléments de manière très flexible et concise. Elles peuvent remplacer les boucles `for` et `foreach` dans de nombreux cas.
 
-Voici quelques exemples de fonctions de haut ordre utiles pour manipuler des tableaux en PHP :
+Voici quelques exemples de fonctions de haut ordre utiles pour manipuler des tableaux :
 
 - array_filter() : cette fonction permet de filtrer les éléments d'un tableau en fonction d'un critère donné. Par exemple, pour récupérer uniquement les éléments pairs d'un tableau, on peut utiliser la syntaxe suivante :
 

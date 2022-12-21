@@ -1,6 +1,6 @@
 # Les structures de contrôle
 
-Les structures de contrôle permettent de contrôler l'exécution d'un script PHP. Elles permettent de tester une condition et d'exécuter un bloc de code si la condition est vraie, ou de répéter un bloc de code un certain nombre de fois.
+Les structures de contrôle permettent de contrôler l'exécution d'un script. Elles permettent de tester une condition et d'exécuter un bloc de code si la condition est vraie, ou de répéter un bloc de code un certain nombre de fois.
 
 Voici une liste des principales structures de contrôle en PHP :
 
@@ -20,7 +20,7 @@ Les conditions permettent de tester une valeur ou une expression et d'exécuter 
 
 ### La structure if
 
-La structure if en PHP permet de tester une condition et d'exécuter un bloc de code si cette condition est vraie. La syntaxe de base de la structure if est la suivante :
+La structure if permet de tester une condition et d'exécuter un bloc de code si cette condition est vraie. La syntaxe de base de la structure if est la suivante :
 
 ```php
 if (condition) {
@@ -60,7 +60,7 @@ echo "Vous êtes mineur.";
 
 ### la structure switch
 
-La structure `switch` en PHP permet de tester plusieurs valeurs possibles pour une expression et d'exécuter un bloc de code correspondant à la première valeur qui correspond. Elle peut être utilisée pour remplacer plusieurs instructions `if...elseif...else`.
+La structure `switch` permet de tester plusieurs valeurs possibles pour une expression et d'exécuter un bloc de code correspondant à la première valeur qui correspond. Elle peut être utilisée pour remplacer plusieurs instructions `if...elseif...else`.
 
 Voici la syntaxe de base de la structure switch :
 
@@ -112,11 +112,11 @@ switch ($note) {
 }
 ```
 
-Lorsqu'une structure switch est exécutée en PHP, l'expression spécifiée est évaluée et sa valeur est comparée aux valeurs des différents case. Si une valeur correspond, le bloc de code associé est exécuté. Si aucune valeur ne correspond, le bloc de code associé à la clause default est exécuté (si elle est présente).
+Lorsqu'une structure switch est exécutée, l'expression spécifiée est évaluée et sa valeur est comparée aux valeurs des différents case. Si une valeur correspond, le bloc de code associé est exécuté. Si aucune valeur ne correspond, le bloc de code associé à la clause default est exécuté (si elle est présente).
 
 ### La structure match
 
-La structure `match` en PHP permet de tester une valeur et d'exécuter un bloc de code correspondant à la première valeur qui correspond. Elle est similaire à la structure `switch`, mais offre une syntaxe différente et de nouvelles fonctionnalités.
+La structure `match` permet de tester une valeur et d'exécuter un bloc de code correspondant à la première valeur qui correspond. Elle est similaire à la structure `switch`, mais offre une syntaxe différente et de nouvelles fonctionnalités.
 
 Voici la syntaxe de base de la structure match :
 
@@ -164,14 +164,15 @@ Voici une liste des principales boucles disponibles en PHP :
 - `while` : permet de répéter un bloc de code tant qu'une condition est vraie.
 - `do...while` : permet de répéter un bloc de code au moins une fois, puis de continuer à le répéter tant qu'une condition est vraie.
 - `for` : permet de répéter un bloc de code un certain nombre de fois en spécifiant une condition de fin et un compteur.
-- `foreach` : permet de parcourir les éléments d'un tableau ou d'un objet et de les traiter un à un. Elle est déconseillée car elle rend le code difficile à lire et à maintenir. Elle est également considérée comme une mauvaise pratique en PHP.
+- `foreach` : permet de parcourir les éléments d'un tableau ou d'un objet et de les traiter un à un.
+- `goto` : permet de sauter à un endroit précis du code. Elle est déconseillée car elle rend le code difficile à lire et à maintenir. Elle est également considérée comme une mauvaise pratique en programmation.
 
 ![](./goto.png)
 source : [https://xkcd.com/292/](https://xkcd.com/292/)
 
 ### La boucle while
 
-La boucle `while` en PHP permet de répéter un bloc de code tant qu'une condition est vraie. La syntaxe de base de la boucle `while` est la suivante :
+La boucle `while` permet de répéter un bloc de code tant qu'une condition est vraie. La syntaxe de base de la boucle `while` est la suivante :
 
 ```php
 while (condition) {
@@ -193,7 +194,7 @@ Il est important de noter que la condition doit être mise à jour à l'intérie
 
 ### La boucle do...while
 
-La boucle `do...while` en PHP permet de répéter un bloc de code au moins une fois, puis de continuer à le répéter tant qu'une condition est vraie. La syntaxe de base de la boucle `do...while` est la suivante :
+La boucle `do...while` permet de répéter un bloc de code au moins une fois, puis de continuer à le répéter tant qu'une condition est vraie. La syntaxe de base de la boucle `do...while` est la suivante :
 
 ```php
 do {
@@ -215,7 +216,7 @@ Il est important de noter que la condition est vérifiée à la fin de chaque it
 
 ### La boucle for
 
-La boucle `for` en PHP permet de répéter un bloc de code un certain nombre de fois en spécifiant une condition de fin et un compteur. La syntaxe de base de la boucle `for` est la suivante :
+La boucle `for` permet de répéter un bloc de code un certain nombre de fois en spécifiant une condition de fin et un compteur. La syntaxe de base de la boucle `for` est la suivante :
 
 ```php
 for (initialisation; condition; incrémentation) {
@@ -245,9 +246,9 @@ while ($i <= 10) {
 }
 ```
 
-Il est parfois nécessaire d'inverser l'ordre de parcours d'une boucle en PHP, c'est-à-dire de commencer par la fin et de se déplacer vers le début. Cela peut être utile lorsque l'on veut parcourir un tableau ou une chaîne de caractères à l'envers, par exemple.
+Il est parfois nécessaire d'inverser l'ordre de parcours d'une boucle, c'est-à-dire de commencer par la fin et de se déplacer vers le début. Cela peut être utile lorsque l'on veut parcourir un tableau ou une chaîne de caractères à l'envers, par exemple.
 
-Pour inverser une boucle en PHP, il suffit de changer l'opérateur de comparaison de la condition de fin de la boucle. Par exemple, pour inverser une boucle `for` qui compte de `1` à `10`, il suffit de changer l'opérateur de comparaison de `<=` à `>=` :
+Pour inverser une boucle, il suffit de changer l'opérateur de comparaison de la condition de fin de la boucle. Par exemple, pour inverser une boucle `for` qui compte de `1` à `10`, il suffit de changer l'opérateur de comparaison de `<=` à `>=` :
 
 ```php
 for ($i = 10; $i >= 1; $i--) {
@@ -267,7 +268,7 @@ while ($i >= 1) {
 
 Il est important de noter que l'incrémentation ou la décrémentation de la variable de compteur doit être modifiée en conséquence pour qu'elle corresponde à l'ordre de parcours inverse de la boucle.
 
-Il est possible d'imbriquer plusieurs boucles `for` en PHP, c'est-à-dire de mettre une boucle `for` à l'intérieur d'une autre boucle `for`. Cette technique est souvent utilisée pour parcourir des tableaux à plusieurs dimensions, comme un tableau à deux dimensions.
+Il est possible d'imbriquer plusieurs boucles `for`, c'est-à-dire de mettre une boucle `for` à l'intérieur d'une autre boucle `for`. Cette technique est souvent utilisée pour parcourir des tableaux à plusieurs dimensions, comme un tableau à deux dimensions.
 
 Voici un exemple de boucles `for` imbriquées qui parcourent un tableau à deux dimensions :
 
@@ -288,7 +289,7 @@ Il est important de noter que les boucles imbriquées peuvent être difficiles �
 
 ### La boucle foreach
 
-La boucle `foreach` en PHP permet de parcourir les éléments d'un tableau ou d'un objet et de les traiter un à un. La syntaxe de base de la boucle foreach est la suivante :
+La boucle `foreach` permet de parcourir les éléments d'un tableau ou d'un objet et de les traiter un à un. La syntaxe de base de la boucle foreach est la suivante :
 
 ```php
 foreach (tableau ou objet as $variable) {
@@ -307,7 +308,7 @@ foreach ($tableau as $element) {
 
 Dans cet exemple, la boucle foreach parcourt chaque élément du tableau et affiche sa valeur.
 
-Il est également possible de parcourir les éléments d'un tableau associatif en PHP en utilisant la boucle `foreach`. Un tableau associatif est un tableau qui a des clés et des valeurs, au lieu d'avoir des indices numériques comme dans un tableau ordinaire.
+Il est également possible de parcourir les éléments d'un tableau associatif en utilisant la boucle `foreach`. Un tableau associatif est un tableau qui a des clés et des valeurs, au lieu d'avoir des indices numériques comme dans un tableau ordinaire.
 
 Voici un exemple de boucle `foreach` qui parcourt les clés et les valeurs d'un tableau associatif :
 
@@ -319,3 +320,39 @@ foreach ($tableau as $cle => $valeur) {
 ```
 
 Dans cet exemple, la boucle `foreach` parcourt chaque élément du tableau associatif et affiche la clé et la valeur de chaque élément.
+
+## Break et continue
+
+### Break
+
+Le mot-clé `break` permet d'interrompre l'exécution d'une boucle. Il peut être utilisé dans une boucle `for`, une boucle `while`, une boucle `do...while` ou une boucle `foreach`.
+
+Voici un exemple de boucle `for` qui affiche les entiers de `1` à `10` et qui s'arrête lorsque la valeur de la variable de compteur est égale à `5` :
+
+```php
+for ($i = 1; $i <= 10; $i++) {
+    if ($i == 5) {
+        break;
+    }
+    echo $i;
+}
+
+// Affiche 1234
+```
+
+### Continue
+
+Le mot-clé `continue` permet d'interrompre l'exécution de l'itération courante d'une boucle et de passer à l'itération suivante. Il peut être utilisé dans une boucle `for`, une boucle `while`, une boucle `do...while` ou une boucle `foreach`.
+
+Voici un exemple de boucle `for` qui affiche les entiers de `1` à `10` et qui saute l'itération courante lorsque la valeur de la variable de compteur est égale à `5` :
+
+```php
+for ($i = 1; $i <= 10; $i++) {
+    if ($i == 5) {
+        continue;
+    }
+    echo $i;
+}
+
+// Affiche 1234678910
+```

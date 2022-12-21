@@ -1,6 +1,6 @@
 # Les chaines de caractères
 
-En PHP, les chaînes de caractères sont des séquences de caractères utilisées pour représenter du texte. Elles peuvent être définies de différentes manières :
+Les chaînes de caractères sont des séquences de caractères utilisées pour représenter du texte. Elles peuvent être définies de différentes manières :
 
 - En utilisant des guillemets simples `'`:
 
@@ -42,7 +42,7 @@ $chaine = 'Bonjour';
 $sous_chaine = substr($chaine, 0, 4); // 'Bonj'
 ```
 
-Il existe de nombreuses autres fonctions permettant de manipuler les chaînes de caractères en PHP, telles que `strlen()` pour obtenir la longueur d'une chaîne, `strtolower()` pour convertir une chaîne en minuscules, ou encore `str_replace()` pour remplacer un sous-texte par un autre dans une chaîne.
+Il existe de nombreuses autres fonctions permettant de manipuler les chaînes de caractères, telles que `strlen()` pour obtenir la longueur d'une chaîne, `strtolower()` pour convertir une chaîne en minuscules, ou encore `str_replace()` pour remplacer un sous-texte par un autre dans une chaîne.
 
 - strlen() : renvoie la longueur d'une chaîne de caractères.
 - strtolower() : convertit une chaîne de caractères en minuscules.
@@ -58,7 +58,7 @@ Il existe de nombreuses autres fonctions permettant de manipuler les chaînes de
 
 ## Formatage de chaînes
 
-Il existe plusieurs façons de formater une chaîne de caractères en PHP :
+Il existe plusieurs façons de formater une chaîne de caractères :
 
 1. Utiliser la fonction `sprintf()` : cette fonction permet de formater une chaîne de caractères en utilisant des placeholders représentés par des symboles `%` suivis d'une lettre indiquant le type de données à afficher (par exemple `%s` pour une chaîne de caractères, `%d` pour un entier, etc.). Par exemple :
 
@@ -90,4 +90,4 @@ CHAINE;
 // $chaine vaut 'Bonjour,\nje m'appelle John et j'ai 30 ans.'
 ```
 
-Il existe également d'autres façons de formater une chaîne de caractères en PHP, comme par exemple en utilisant des fonctions de mise en forme telles que `nl2br()` pour convertir les retours à la ligne en balises HTML `<br>`, ou encore `str_pad()` pour ajouter des caractères de remplissage à une chaîne.
+Il existe également d'autres façons de formater une chaîne de caractères, comme par exemple en utilisant des fonctions de mise en forme telles que `nl2br()` pour convertir les retours à la ligne en balises HTML `<br>`, ou encore `str_pad()` pour ajouter des caractères de remplissage à une chaîne.

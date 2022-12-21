@@ -32,7 +32,7 @@ echo date("d/m/Y"); // 01/01/2020 mais à la date du jour
 echo strtotime("2020-01-01"); // 1577836800
 ```
 
-Voici quelques exemples de fonctions plus avancées disponibles avec PHP :
+Voici quelques exemples de fonctions plus avancées disponibles :
 
 - Fonctions de gestion de fichiers : par exemple, la fonction "file_get_contents" permet de lire le contenu d'un fichier, tandis que la fonction "file_put_contents" permet d'écrire du contenu dans un fichier.
 
@@ -85,7 +85,7 @@ $inbox = imap_open(
 
 ## Où les trouver ?
 
-Vous pouvez trouver la liste complète des fonctions de base disponibles avec PHP dans la documentation officielle de PHP, disponible sur le site web suivant : [https://www.php.net/manual/fr/indexes.functions.php](https://www.php.net/manual/fr/indexes.functions.php). Cette liste comportent presque 9000 fonctions, ce qui peut être un peu intimidant au premier abord. Cela fait aussi de PHP une language très riche et très puissant.
+Vous pouvez trouver la liste complète des fonctions de base dans la documentation officielle de PHP, disponible sur le site web suivant : [https://www.php.net/manual/fr/indexes.functions.php](https://www.php.net/manual/fr/indexes.functions.php). Cette liste comportent presque 9000 fonctions, ce qui peut être un peu intimidant au premier abord. Cela fait aussi de PHP une language très riche et très puissant.
 
 Pour accéder à la documentation d'une fonction particulière, il vous suffit de cliquer sur le lien correspondant dans la liste des fonctions ou de saisir le nom de la fonction dans la barre de recherche en haut à droite de la page.
 

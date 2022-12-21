@@ -2,7 +2,7 @@
 
 Les fonctions définies par l'utilisateur sont des blocs de code qui peuvent être exécutés plusieurs fois à différents endroits de votre script. Elles vous permettent de structurer votre code et de le rendre plus lisible et maintenable en le découpant en parties plus petites et plus faciles à gérer.
 
-Voici comment définir une fonction en PHP :
+Voici comment définir une fonction :
 
 ```php
 function nom_de_ma_fonction($arg1, $arg2, ...) {
@@ -10,13 +10,13 @@ function nom_de_ma_fonction($arg1, $arg2, ...) {
 }
 ```
 
-Le nom de la fonction doit suivre les règles de nommage des variables en PHP.
+Le nom de la fonction doit suivre les règles de nommage des variables.
 
 Les arguments de la fonction sont des variables qui sont passées à la fonction lors de son appel et qui peuvent être utilisées à l'intérieur du corps de la fonction. Vous pouvez définir autant d'arguments que vous le souhaitez, en les séparant par une virgule.
 
-Le corps de la fonction est le code qui sera exécuté lorsque la fonction sera appelée. Il peut contenir du code PHP, des instructions de contrôle de flux, des appels à d'autres fonctions, etc.
+Le corps de la fonction est le code qui sera exécuté lorsque la fonction sera appelée. Il peut contenir du code, des instructions de contrôle de flux, des appels à d'autres fonctions, etc.
 
-Voici comment appeler une fonction en PHP :
+Voici comment appeler une fonction :
 
 ```php
 nom_de_ma_fonction($arg1_value, $arg2_value, ...);
@@ -126,7 +126,7 @@ print(1.5); // appelle la fonction print(double)
 
 ## Déballage d'arguments
 
-Le déballage des arguments en PHP est une façon de passer un tableau ou un objet "iterable" (c'est-à-dire une classe implémentant l'interface `Traversable`) en tant qu'arguments d'une fonction. Cela permet de décomposer le contenu du tableau ou de l'objet en une série d'arguments individuels qui sont passés à la fonction.
+Le déballage des arguments est une façon de passer un tableau ou un objet "iterable" (c'est-à-dire une classe implémentant l'interface `Traversable`) en tant qu'arguments d'une fonction. Cela permet de décomposer le contenu du tableau ou de l'objet en une série d'arguments individuels qui sont passés à la fonction.
 
 Voici un exemple d'utilisation du déballage des arguments avec un tableau :
 
@@ -169,7 +169,7 @@ Il est important de noter que la factorisation n'est pas seulement bénéfique p
 
 ### Exemple
 
-Voici un exemple de refactorisation d'un programme impératif en utilisant des fonctions en PHP :
+Voici un exemple de refactorisation d'un programme impératif en utilisant des fonctions :
 
 Voici le code impératif original :
 
@@ -379,7 +379,7 @@ print_r($evenNumbers); // affiche [2, 4, 6, 8, 10]
 
 Les appels de fonctions dynamiques permettent d'appeler une fonction dont le nom est déterminé au `runtime`, c'est-à-dire lorsque le programme est exécuté. Cela peut être utile lorsque vous avez besoin de déterminer le nom de la fonction à appeler en fonction de certaines conditions ou de la valeur d'une variable.
 
-Voici comment effectuer un appel de fonction dynamique en PHP :
+Voici comment effectuer un appel de fonction dynamique :
 
 ```php
 function greet($name)
@@ -433,7 +433,7 @@ La récursivité en programmation est un concept qui consiste à définir une fo
 
 ### Factorielle
 
-Voici un exemple de fonction récursive en PHP qui calcule la factorielle d'un nombre :
+Voici un exemple de fonction récursive qui calcule la factorielle d'un nombre :
 
 ```php
 function factorial($number)

@@ -1,6 +1,6 @@
 # Les variables
 
-En PHP, une variable est un conteneur pour stocker une valeur de n'importe quel type, comme un nombre entier, un nombre à virgule flottante, une chaîne de caractères, un tableau, etc.
+Une variable est un conteneur pour stocker une valeur de n'importe quel type, comme un nombre entier, un nombre à virgule flottante, une chaîne de caractères, un tableau, etc.
 
 Pour déclarer une variable en PHP, vous devez utiliser le signe dollar `$` suivi du nom de la variable. Le nom de la variable doit commencer par une lettre ou un underscore `_`, suivi de tout nombre de lettres, de chiffres ou d'underscores.
 

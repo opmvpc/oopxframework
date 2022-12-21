@@ -103,7 +103,7 @@ var_dump(!$b); // true
 
 Opérateur ternaire : `? :`
 
-L'opérateur ternaire en PHP est un opérateur de condition qui permet de simplifier l'écriture de code en remplaçant une instruction if et else. Il se présente sous la forme suivante `: condition ? expression1 : expression2`. Si la condition est vraie, l'expression1 sera évaluée et retournée, sinon l'expression2 sera évaluée et retournée. Voici un exemple d'utilisation de l'opérateur ternaire :
+L'opérateur ternaire est un opérateur de condition qui permet de simplifier l'écriture de code en remplaçant une instruction if et else. Il se présente sous la forme suivante `condition ? expression1 : expression2`. Si la condition est vraie, l'expression1 sera évaluée et retournée, sinon l'expression2 sera évaluée et retournée. Voici un exemple d'utilisation de l'opérateur ternaire :
 
 ```php
 $age = 18;
@@ -111,7 +111,23 @@ $autorisation = ($age >= 18) ? "Vous êtes autorisé" : "Vous n'êtes pas autori
 echo $autorisation;
 ```
 
-Dans cet exemple, si l'âge est supérieur ou égal à 18, la chaîne de caractères "Vous êtes autorisé" sera retournée, sinon la chaîne "Vous n'êtes pas autorisé" sera retournée. L'opérateur ternaire peut être utilisé de manière à remplacer une instruction `if` et `else` simple, mais il peut également être imbriqué pour créer des conditions plus complexes.
+Dans cet exemple, si l'âge est supérieur ou égal à 18, la chaîne de caractères "Vous êtes autorisé" sera retournée, sinon la chaîne "Vous n'êtes pas autorisé" sera retournée.
+
+Il est déconseillé d'utiliser l'opérateur ternaire pour des conditions trop complexes, car cela rend le code difficile à lire. Dans ce cas, il est préférable d'utiliser une instruction if et else.
+
+## Opérateur Elvis
+
+Opérateur Elvis : `?:`
+
+L'opérateur Elvis est un opérateur de condition qui permet de simplifier l'écriture de code en remplaçant une instruction if et else. Il se présente sous la forme suivante `expression1 ?: expression2`. Si `expression1` est vraie, `expression1` sera retournée, sinon `expression2` retournée. Il est utile pour définir une valeur par défaut pour une variable. Les deux notations suivantes sont équivalentes :
+
+```php
+// Opérateur ternaire
+$text = ($text !== null) ? $text : "default";
+
+// Opérateur Elvis
+$text = $text ?: "default";
+```
 
 ## Opérateurs sur les bits
 
@@ -172,20 +188,28 @@ $resultat = $tableau1 + $tableau2;
 // $resultat vaut ["a", "b", "c", "d", "e", "f"]
 ```
 
-Il existe également plusieurs opérateurs de comparaison pour les tableaux en PHP. L'opérateur `==` permet de vérifier si deux tableaux ont les mêmes valeurs, l'opérateur `!=` permet de vérifier s'ils ont des valeurs différentes, l'opérateur `===` permet de vérifier si deux tableaux ont les mêmes valeurs et les mêmes types de données, et l'opérateur `!==` permet de vérifier s'ils ont des valeurs ou des types de données différents. Par exemple :
+Il existe également plusieurs opérateurs de comparaison pour les tableaux en PHP. L'opérateur `==` permet de vérifier si deux tableaux ont les mêmes valeurs, l'opérateur `!=` permet de vérifier s'ils ont des valeurs différentes, l'opérateur `===` permet de vérifier si deux tableaux ont les mêmes valeurs et sont de type identique (tableau) et l'opérateur `!==` permet de vérifier s'ils ont des valeurs différentes ou ne sont pas de type identique (tableau). Par exemple :
 
 ```php
-$tableau1 = ["a", "b", "c"];
-$tableau2 = ["a", "b", "c"];
-$tableau3 = ["a", "b", "d"];
+$tableau1 = [];
+$tableau2 = [];
+$tableau3 = null;
+$tableau4 = false;
 
-if ($tableau1 == $tableau2) {
-    echo "Les tableaux ont les mêmes valeurs.";
-}
+var_dump($tableau1 == $tableau2); // Affiche "bool(true)"
+var_dump($tableau1 != $tableau2); // Affiche "bool(false)"
+var_dump($tableau1 === $tableau2); // Affiche "bool(true)"
+var_dump($tableau1 !== $tableau2); // Affiche "bool(false)"
 
-if ($tableau1 !== $tableau3) {
-    echo "Les tableaux ont des valeurs ou des types de données différents.";
-}
+var_dump($tableau1 == $tableau3); // Affiche "bool(true)"
+var_dump($tableau1 != $tableau3); // Affiche "bool(false)"
+var_dump($tableau1 === $tableau3); // Affiche "bool(false)"
+var_dump($tableau1 !== $tableau3); // Affiche "bool(true)"
+
+var_dump($tableau1 == $tableau4); // Affiche "bool(true)"
+var_dump($tableau1 != $tableau4); // Affiche "bool(false)"
+var_dump($tableau1 === $tableau4); // Affiche "bool(false)"
+var_dump($tableau1 !== $tableau4); // Affiche "bool(true)"
 ```
 
 Enfin, l'opérateur d'accès à un élément de tableau `[]` permet de lire ou de modifier un élément d'un tableau en utilisant sa clé. Par exemple :
