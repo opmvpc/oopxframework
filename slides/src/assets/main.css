@@ -1,0 +1,21 @@
+@import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+@import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+@import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.remark-slides-area {
+  font-family: "Droid Serif";
+}
+.remark-slides-area h1,
+.remark-slides-area h2,
+.remark-slides-area h3 {
+  font-family: "Yanone Kaffeesatz";
+  font-weight: normal;
+}
+.remark-code,
+.remark-inline-code {
+  font-family: "Ubuntu Mono";
+}

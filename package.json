@@ -4,8 +4,16 @@
   "description": "cours de poo et framework",
   "main": "index.js",
   "scripts": {
-    "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "install:slides": "cd slides && npm install",
+    "postinstall": "npm run install:slides",
+    "dev": "concurrently npm:dev:*",
+    "build": "npm run build:docs && npm run build:slides",
+    "preview": "vite preview",
+    "dev:slides": "cd slides && npm run dev",
+    "build:slides": "cd slides && npm run build",
+    "dev:docs": "vuepress dev docs",
+    "build:docs": "vuepress build docs",
+    "postbuild": "rm -rf ./dist && mkdir dist && cp -r -v ./docs/.vuepress/dist/* ./dist && cd dist && mkdir slides && cd .. && cp -r -v ./slides/dist/* ./dist/slides"
   },
   "author": "opmvpc",
   "license": "MPL-2.0",
@@ -13,5 +21,10 @@
     "@vuepress/plugin-register-components": "^2.0.0-beta.59",
     "@vuepress/plugin-search": "^2.0.0-beta.59",
     "vuepress": "^2.0.0-beta.59"
+  },
+  "dependencies": {
+    "concurrently": "^7.6.0",
+    "copyfiles": "^2.4.1",
+    "vite": "^4.0.4"
   }
 }
