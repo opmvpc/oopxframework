@@ -7,12 +7,12 @@ const slideshow = ref(null);
 onMounted(async () => {
   const id = useRoute().params.id;
 
-  const res = await fetch(`/slides/${id}.md`);
+  const res = await fetch(`/slides/slides/${id}.md`);
   if (res.status === 404) {
-    window.location.href = "/404";
+    window.location.href = "/slides/404";
   }
   slideshow.value = remark.create({
-    sourceUrl: `/slides/${id}.md`,
+    sourceUrl: `/slides/slides/${id}.md`,
     highlightLanguage: "php",
     highlightStyle: "github",
   });
