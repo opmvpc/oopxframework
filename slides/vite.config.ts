@@ -5,6 +5,7 @@ import Vue from "@vitejs/plugin-vue";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "/slides/",
   plugins: [
     Vue({
       include: [/\.vue$/, /\.md$/],
