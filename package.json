@@ -8,7 +8,6 @@
     "postinstall": "npm run install:slides",
     "dev": "concurrently npm:dev:*",
     "build": "npm run build:docs && npm run build:slides",
-    "preview": "vite preview",
     "dev:slides": "cd slides && npm run dev",
     "build:slides": "cd slides && npm run build",
     "dev:docs": "vuepress dev docs",
@@ -23,7 +22,6 @@
     "vuepress": "^2.0.0-beta.59"
   },
   "dependencies": {
-    "concurrently": "^7.6.0",
-    "vite": "^4.0.4"
+    "concurrently": "^7.6.0"
   }
 }

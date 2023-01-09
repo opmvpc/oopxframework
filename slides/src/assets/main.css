@@ -1,21 +1,32 @@
-@import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
-@import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
-@import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.remark-slides-area {
-  font-family: "Droid Serif";
-}
-.remark-slides-area h1,
-.remark-slides-area h2,
-.remark-slides-area h3 {
-  font-family: "Yanone Kaffeesatz";
-  font-weight: normal;
-}
 .remark-code,
 .remark-inline-code {
-  font-family: "Ubuntu Mono";
+  @apply text-sm;
+}
+.remark-slides-area h1 {
+  @apply text-4xl mb-5 ;
+}
+.remark-slides-area h2 {
+  @apply text-2xl mb-3 mt-0 ;
+}
+.remark-slides-area h3 {
+  @apply text-xl mb-2 mt-0 ;
+}
+p {
+  @apply mb-2 text-base;
+}
+
+.remark-slides-area ul {
+  @apply list-disc list-outside mb-2 text-base;
+}
+
+.remark-slides-area ol {
+  @apply list-decimal list-outside mb-2 text-base;
+}
+
+.remark-slides-area li {
+  @apply my-0;
 }
