@@ -11,5 +11,13 @@
         >
       </li>
     </ol>
+    <hr />
+    <h1>Bureautique avancée</h1>
+    <h2>Recherche et critique d'informations</h2>
+    <ol>
+      <li>
+        <router-link to="/gpt">ChatGPT</router-link>
+      </li>
+    </ol>
   </main>
 </template>
