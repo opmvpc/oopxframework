@@ -1,5 +1,7 @@
 # Les Fonctions utilisateurs
 
+[[toc]]
+
 Les fonctions définies par l'utilisateur sont des blocs de code qui peuvent être exécutés plusieurs fois à différents endroits de votre script. Elles vous permettent de structurer votre code et de le rendre plus lisible et maintenable en le découpant en parties plus petites et plus faciles à gérer.
 
 Voici comment définir une fonction :

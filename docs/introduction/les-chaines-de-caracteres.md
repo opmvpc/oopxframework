@@ -1,5 +1,7 @@
 # Les chaines de caractères
 
+[[toc]]
+
 Les chaînes de caractères sont des séquences de caractères utilisées pour représenter du texte. Elles peuvent être définies de différentes manières :
 
 - En utilisant des guillemets simples `'`:

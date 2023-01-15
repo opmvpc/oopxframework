@@ -1,5 +1,7 @@
 # Les erreurs et exceptions
 
+[[toc]]
+
 ## Les erreurs
 
 En PHP, une erreur est un événement qui se produit lorsqu'il y a une anomalie dans le code qui ne peut pas être gérée de manière appropriée. Les erreurs peuvent être causées par de nombreux facteurs, tels que des erreurs de syntaxe, des références à des variables non définies, des appels à des fonctions inexistantes, etc.

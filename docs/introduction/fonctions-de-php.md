@@ -1,5 +1,7 @@
 # Les fonctions de PHP
 
+[[toc]]
+
 Les fonctions de base disponibles avec PHP sont des outils pratiques qui permettent de réaliser des tâches courantes de manière simple et efficace.
 
 ## À quoi peuvent-elles servir ?

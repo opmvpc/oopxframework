@@ -1,5 +1,7 @@
 # Introduction
 
+[[toc]]
+
 ## Présentation
 
 Ce cours a pour objectif de vous faire découvrir les bases de la programmation orientée objet et de vous initier à l'utilisation d'un framework MVC.
@@ -7,6 +9,7 @@ Ce cours a pour objectif de vous faire découvrir les bases de la programmation 
 Nous utiliserons le langage PHP pour ce cours dans sa version 8.x.
 
 Le cours se déroulera en 3 parties :
+
 - Révision des bases du PHP
 - Programmation orientée objet
 - Utilisation d'un framework MVC (Laravel)

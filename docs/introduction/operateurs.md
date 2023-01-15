@@ -1,5 +1,7 @@
 # Les opérateurs
 
+[[toc]]
+
 Voici la liste des types d'opérateurs disponibles en PHP, regroupés par catégorie :
 
 ## Opérateurs unaires

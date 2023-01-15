@@ -1,5 +1,7 @@
 # Les tableaux
 
+[[toc]]
+
 En PHP, les tableaux (ou arrays en anglais) sont des structures de données permettant de stocker plusieurs valeurs dans une seule variable. Ils sont très utiles lorsqu'il est nécessaire de manipuler des collections de données, comme par exemple une liste de noms ou un ensemble de valeurs numériques.
 
 Les tableaux en PHP peuvent être définis de différentes manières :

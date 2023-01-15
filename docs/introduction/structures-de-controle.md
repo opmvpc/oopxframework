@@ -1,5 +1,7 @@
 # Les structures de contrôle
 
+[[toc]]
+
 Les structures de contrôle permettent de contrôler l'exécution d'un script. Elles permettent de tester une condition et d'exécuter un bloc de code si la condition est vraie, ou de répéter un bloc de code un certain nombre de fois.
 
 Voici une liste des principales structures de contrôle en PHP :

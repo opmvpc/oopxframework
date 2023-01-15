@@ -1,5 +1,7 @@
 # Syntaxe de base
 
+[[toc]]
+
 Voici quelques éléments de syntaxe de base de PHP :
 
 - Les instructions sont inclues dans des balises `<?php` et `?>`. Tout ce qui se trouve entre ces balises sera exécuté comme du code PHP.

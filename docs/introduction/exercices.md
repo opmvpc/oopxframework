@@ -1,5 +1,7 @@
 # Exercices
 
+[[toc]]
+
 ## Exercism
 
 1. opérateurs arithmétiques et boucles
