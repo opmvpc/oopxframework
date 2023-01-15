@@ -6,7 +6,7 @@
     <h2>Introduction</h2>
     <ol>
       <li>
-        <router-link to="/structures-de-controle"
+        <router-link to="/show/structures-de-controle"
           >Structures de contrôle</router-link
         >
       </li>
@@ -16,7 +16,7 @@
     <h2>Recherche et critique d'informations</h2>
     <ol>
       <li>
-        <router-link to="/gpt">ChatGPT</router-link>
+        <router-link to="/show/gpt">ChatGPT</router-link>
       </li>
     </ol>
   </main>

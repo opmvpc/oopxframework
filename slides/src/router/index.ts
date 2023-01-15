@@ -11,8 +11,8 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: "/:id",
-      name: "slides",
+      path: "/show/:id",
+      name: "show",
       component: () => import("../views/SlideView.vue"),
     },
     { path: "/:pathMatch(.*)*", name: "NotFound", component: NotFound },
