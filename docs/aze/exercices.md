@@ -1,1 +1,3 @@
 # Exercices
+
+[[toc]]
