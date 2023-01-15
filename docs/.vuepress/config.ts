@@ -76,11 +76,7 @@ export default defineUserConfig({
       "/poo/": [
         {
           text: "POO",
-          children: [
-            "/poo/index.md",
-            "/poo/introduction.md",
-            "/poo/exercices.md",
-          ],
+          children: ["/poo/index.md", "/poo/langages.md", "/poo/exercices.md"],
         },
       ],
     },
