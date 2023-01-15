@@ -73,6 +73,16 @@ export default defineUserConfig({
           ],
         },
       ],
+      "/poo/": [
+        {
+          text: "POO",
+          children: [
+            "/poo/index.md",
+            "/poo/introduction.md",
+            "/poo/exercices.md",
+          ],
+        },
+      ],
     },
   }),
   plugins: [

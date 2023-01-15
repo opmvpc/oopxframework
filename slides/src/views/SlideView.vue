@@ -23,6 +23,6 @@ onMounted(async () => {
   <div
     class="absolute bottom-0 left-0 z-50 mx-2 mb-1 hover:text-cyan-700 transition-all"
   >
-    <a class="underline" href="/">Liste des chapitres</a>
+    <a class="underline" href="/slides/">Liste des chapitres</a>
   </div>
 </template>
