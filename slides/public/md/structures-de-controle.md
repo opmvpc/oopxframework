@@ -12,7 +12,7 @@ class: middle
 
 ### Structures de contrôle
 
-# Matière
+# Table des matières
 
 1. Les conditions: `if`, `else`, `elseif`, `switch`, `?:`, `??`, `??=` et `match`
 2. Les boucles: `while`, `do while`, `for`, `foreach`

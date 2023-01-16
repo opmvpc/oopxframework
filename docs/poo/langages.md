@@ -89,7 +89,7 @@ Un paradigme de programmation est une façon de structurer, de concevoir et d'é
 
 ## Histoire de PHP
 
-### Evolution de PHP
+### Évolution de PHP
 
 PHP (Personal Homepage Processor) a été créé en 1995 par Rasmus Lerdorf. Il a été initialement conçu pour générer des pages web dynamiques grâce à des scripts côté serveur. Au fil des ans, PHP a évolué et s'est enrichi de nouvelles fonctionnalités et améliorations. Les versions les plus importantes sont les suivantes :
 

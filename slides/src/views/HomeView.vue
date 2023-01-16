@@ -11,6 +11,12 @@
         >
       </li>
     </ol>
+    <h2>Programmation orienté objet</h2>
+    <ol>
+      <li>
+        <router-link to="/show/langages">Langages de programmation</router-link>
+      </li>
+    </ol>
     <hr />
     <h1>Bureautique avancée</h1>
     <h2>Recherche et critique d'informations</h2>
