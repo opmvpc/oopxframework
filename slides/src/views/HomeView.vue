@@ -16,6 +16,9 @@
       <li>
         <router-link to="/show/langages">Langages de programmation</router-link>
       </li>
+      <li>
+        <router-link to="/show/classes">Classes et objets</router-link>
+      </li>
     </ol>
     <hr />
     <h1>Bureautique avancée</h1>
