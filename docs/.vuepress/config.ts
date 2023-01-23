@@ -46,8 +46,8 @@ export default defineUserConfig({
         link: "/framework/",
       },
       {
-        text: "Playground",
-        link: "https://laravelplayground.com/#/snippets/810167a9-87e5-4fda-81c7-0c11d164b631",
+        text: "Slides",
+        link: "https://php.tsix.be/slides/",
       },
     ],
     sidebar: {
@@ -80,6 +80,7 @@ export default defineUserConfig({
             "/poo/index.md",
             "/poo/langages.md",
             "/poo/classes.md",
+            "/poo/modelisation.md",
             "/poo/exercices.md",
           ],
         },
