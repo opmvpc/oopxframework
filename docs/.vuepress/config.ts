@@ -79,8 +79,9 @@ export default defineUserConfig({
           children: [
             "/poo/index.md",
             "/poo/langages.md",
-            "/poo/classes.md",
             "/poo/modelisation.md",
+            "/poo/classes.md",
+            "/poo/heritage.md",
             "/poo/exercices.md",
           ],
         },

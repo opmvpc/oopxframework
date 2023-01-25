@@ -118,8 +118,6 @@ Dans cet exemple, nous créons deux objets de la classe Calculatrice, $calc1 et 
 
 Il est important de noter que chaque objet de la classe Calculatrice est indépendant des autres. Les calculs effectués sur `$calc1` n'ont aucun impact sur les calculs effectués sur `$calc2`. C'est l'un des avantages de l'utilisation des classes et des objets : chaque objet peut avoir ses propres données et comportements, indépendamment des autres objets de la même classe.
 
-### Attributs et méthodes
-
 ## Attributs et méthodes
 
 Les attributs sont les caractéristiques qui définissent l'identité d'un objet. Ils sont déclarés à l'intérieur de la classe et peuvent être utilisés pour stocker des informations sur l'objet. Par exemple, dans la classe Calculatrice, nous avons défini un attribut "mémoire" pour stocker les valeurs en cours de calcul. On définit les attributs juste après la déclaration de la classe, avant les méthodes.
