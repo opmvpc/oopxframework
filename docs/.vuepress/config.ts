@@ -86,6 +86,16 @@ export default defineUserConfig({
           ],
         },
       ],
+      "/framework/": [
+        {
+          text: "Framework",
+          children: [
+            "/framework/index.md",
+            "/framework/mvc.md",
+            "/framework/router.md",
+          ],
+        },
+      ],
     },
   }),
   plugins: [
