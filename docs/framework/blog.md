@@ -48,10 +48,7 @@ Le modèle Article aura les champs suivants:
 - img_path: chemin de l'image associée à l'article
 - published_at: date de publication de l'article
 
-Le modèle User aura les champs suivants:
-
-- name: nom de l'utilisateur
-- email: adresse email de l'utilisateur
+Nous utiliserons le modèle User fourni par Laravel pour gérer les utilisateurs de notre application.
 
 Les modèles Article et User seront en relation en utilisant l'association "appartient à". Cela signifie que chaque article appartiendra à un seul utilisateur. Nous pouvons représenter cette relation en utilisant un diagramme de classe:
 
@@ -165,7 +162,11 @@ class ArticleFactory extends Factory
         return [
             'title' => fake()->bs(),
             'body' => fake()->realTextBetween($minNbChars = 500, $maxNbChars = 2000),
-            'img_path' => fake()->image(storage_path('app/public/images'), 640, 480, null, true),
+            'img_path' => function () {
+                $absolutePath = fake()->image(storage_path('app/public/images'), 640, 480, 'cats', true);
+
+                return str_replace(storage_path('app/public/'), '', $absolutePath);
+            },
             'published_at' => fake()->dateTimeBetween('-2 months', '+ 1 month'),
             'user_id' => User::get()->random()->id,
         ];
@@ -306,7 +307,7 @@ Route::get('/', [HomepageController::class, 'index']);
 
 Enfin, nous allons créer la vue associée, `resources/views/homepage/index.blade.php`, qui affichera la liste des articles :
 
-```html
+```php
 <h1>Liste des articles</h1>
 <ul>
   @foreach($articles as $article)
@@ -314,6 +315,10 @@ Enfin, nous allons créer la vue associée, `resources/views/homepage/index.blad
   @endforeach
 </ul>
 ```
+
+Résultat :
+
+![Home](./blog/home.png)
 
 Avec ces modifications, notre application est maintenant capable d'afficher la liste des articles sur la page d'accueil.
 
@@ -345,7 +350,7 @@ La première étape consiste à modifier le fichier `guest.blade.php` dans le do
             <nav class="flex justify-between items-center py-2">
                 <div>
                     <a href="/"
-                        class="font-bold text-3xl flex items-center space-x-4 hover:text-emerald-600 transition ">
+                        class="group font-bold text-3xl flex items-center space-x-4 hover:text-emerald-600 transition ">
                         <x-application-logo
                             class="w-10 h-10 fill-current text-gray-500 group-hover:text-emerald-500 transition" />
                         <span>Mon blog</span>
@@ -412,4 +417,163 @@ Nous allons ensuite modifier notre vue pour afficher les liens de pagination :
         {{ $articles->links() }}
     </div>
 </x-guest-layout>
+```
+
+Résultat:
+
+![Pagination](./blog/home2.png)
+
+## Les articles
+
+### Contrôleur et routes pour les articles
+
+Pour afficher la liste des articles, nous allons créer un `ArticleController` qui aura une méthode `index` pour afficher la liste des articles et une méthode `show` pour afficher le détail d'un article.
+
+```bash
+php artisan make:controller ArticleController
+```
+
+Nous allons ensuite ajouter les méthodes dans le controller :
+
+```php
+namespace App\Http\Controllers;
+
+use App\Models\Article;
+use Illuminate\Http\Request;
+
+class ArticleController extends Controller
+{
+    public function index()
+    {
+        $articles = Article::paginate(12);
+
+        return view('articles.index', [
+            'articles' => $articles,
+        ]);
+    }
+
+    public function show($id)
+    {
+        $article = Article::findOrFail($id);
+
+        return view('articles.show', [
+            'article' => $article,
+        ]);
+    }
+}
+```
+
+Ensuite, nous allons ajouter les routes pour ces méthodes dans le fichier `routes/web.php` :
+
+```php
+Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+Route::get('/articles/{id}', [ArticleController::class, 'show'])->name('articles.show');
+```
+
+Maintenant, nous pouvons visiter `/articles` pour voir la liste des articles et `/articles/{id}` pour voir le détail d'un article.
+
+Nous devons modifier notre layout pour modifier le lien vers la liste des articles :
+
+```php
+<a class="font-bold hover:text-emerald-600 transition"
+                        href="{{ route('articles.index') }}">Articles</a>
+```
+
+Et nous devons modifier notre vue `homepage.index` pour modifier le lien vers le détail des articles :
+
+```php
+<a class="flex bg-white rounded-md shadow-md p-5 w-full hover:shadow-lg hover:scale-105 transition"
+    href="{{ route('articles.show', $article) }}">
+    {{ $article->title }}
+</a>
+```
+
+### Composant ArticleCard
+
+Pour éviter de répéter le code dans plusieurs vues, nous pouvons créer un composant pour afficher un article. Nous allons donc créer un composant `ArticleCard` en utilisant la commande `make:component` :
+
+```bash
+php artisan make:component ArticleCard --view
+```
+
+Le composant sera créé dans le répertoire `resources/views/components`. Nous pouvons maintenant éditer ce fichier pour définir la vue de notre composant.
+
+```php
+<a class="flex flex-col h-full space-y-4 bg-white rounded-md shadow-md p-5 w-full hover:shadow-lg hover:scale-105 transition"
+    href="{{ route('articles.show', $article) }}">
+    <div class="uppercase font-bold text-gray-800">
+        {{ $article->title }}
+    </div>
+    <div class="flex-grow text-gray-700 text-sm text-justify">
+        {{ Str::limit($article->body, 120) }}
+    </div>
+    <div class="text-xs text-gray-500">
+        {{ $article->published_at }}
+    </div>
+</a>
+```
+
+Ensuite, nous utilisons ce composant dans notre vue qui affiche la liste des articles :
+
+```php
+@foreach ($articles as $article)
+    <li>
+        <x-article-card :article="$article" />
+    </li>
+@endforeach
+```
+
+Nous pouvons voir que nous passons les informations de l'article avec un paramètre nommé `article`. Nous pouvons alors les utiliser dans notre composant grâce à la variable `$article`.
+
+### Liste des articles
+
+Nous allons maintenant créer une page qui affiche la liste des articles. Pour ce faire, nous allons créer une nouvelle vue `articles.index` :
+
+```php
+<x-guest-layout>
+    <h1 class="font-bold text-xl mb-4">Liste des articles</h1>
+    <ul class="grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8">
+        @foreach ($articles as $article)
+            <li>
+                <x-article-card :article="$article" />
+            </li>
+        @endforeach
+    </ul>
+
+    <div class="mt-8">
+        {{ $articles->links() }}
+    </div>
+</x-guest-layout>
+```
+
+### Détail d'un article
+
+Nous allons maintenant créer une page qui affiche le détail d'un article. Pour ce faire, nous allons créer une nouvelle vue `articles.show` :
+
+```php
+<x-guest-layout>
+    <h1 class="font-bold text-xl mb-4">{{ $article->title }}</h1>
+    <div class="mb-4 text-xs text-gray-500">
+        {{ $article->published_at }}
+    </div>
+    <div>
+        {!! \nl2br($article->body) !!}
+    </div>
+</x-guest-layout>
+```
+
+### Exercices
+
+- Ajouter un lien de retour vers la liste des articles dans la page de détail d'un article.
+- Afficher les images des articles dans la liste des articles et dans la page de détail d'un article.
+- Ajouter un footer avec des liens vers les réseaux sociaux.
+- Ajouter une page "À propos" qui affiche un texte de présentation de l'auteur. Ajouter un lien vers cette page dans le nav.
+- Customiser le thème de l'application avec TailwindCSS. [documentation](https://tailwindcss.com/docs/)
+
+Attention, pour afficher les images, il faut exécuter la commande `php artisan storage:link` pour créer un lien symbolique vers le dossier `storage/app/public` dans le dossier `public/storage`.
+
+Ensuite, pour générer le lien vers une image, il faut utiliser la fonction `asset` :
+
+```php
+<img src="{{ Storage::url($article->img_path) }}" alt="illustration de l'article">
 ```
