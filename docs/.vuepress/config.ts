@@ -93,6 +93,7 @@ export default defineUserConfig({
             "/framework/index.md",
             "/framework/mvc.md",
             "/framework/router.md",
+            "/framework/blog.md",
           ],
         },
       ],
