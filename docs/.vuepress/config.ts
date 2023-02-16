@@ -94,6 +94,7 @@ export default defineUserConfig({
             "/framework/mvc.md",
             "/framework/router.md",
             "/framework/blog.md",
+            "/framework/twitter.md",
           ],
         },
       ],

@@ -577,3 +577,559 @@ Ensuite, pour générer le lien vers une image, il faut utiliser la fonction `as
 ```php
 <img src="{{ Storage::url($article->img_path) }}" alt="illustration de l'article">
 ```
+
+## Administration
+
+Nous allons créer une interface d'administration pour gérer les articles. Nous allons créer:
+
+- une page qui affiche la liste des articles
+- une page pour créer un article
+- une page pour modifier un article
+- un bouton pour supprimer un article
+
+### Contrôleur et routes pour l'administration
+
+Nous allons créer un dossier Admin dans le dossier des controlleurs. Nous y ajouterons un contrôleur `ArticleController` qui aura les méthodes `index`, `create`, `store`, `edit`, `update` et `destroy`.
+Pour ce faire, nous allons utiliser un contrôleur ressource. Ce sont des contrôleurs qui ont des méthodes prédéfinies pour les actions de base d'un CRUD. Nous allons donc utiliser la commande `make:controller` avec l'option `--resource` et l'option `--model` pour spécifier le modèle associé au contrôleur :
+
+```bash
+php artisan make:controller Admin/ArticleController --resource --model=Article
+```
+
+Nous allons ensuite ajouter une route de type `resource` pour ce contrôleur dans le fichier `routes/web.php`. Nous allons également ajouter un middleware `auth` pour protéger l'accès à ces routes ainsi qu'un préfixe `admin` pour les routes de l'administration.
+
+```php
+// autres imports ...
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
+
+// autres routes ...
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::resource('articles', AdminArticleController::class);
+});
+```
+
+Nous avons déjà un contrôleur "ArticleController" dans le dossier "app/Http/Controllers". Avec les namespaces PHP, nous pouvons utiliser le même nom de contrôleur pour deux contrôleurs différents. Pour les distringuer dans un même fichier, nous pouvons utiliser un alias. Nous avons donc utilisé l'alias `AdminArticleController` pour le contrôleur de l'administration.
+
+### Vue pour la liste des articles
+
+Nous allons maintenant créer une vue pour afficher la liste des articles. Nous allons créer un fichier `resources/views/admin/articles/index.blade.php` :
+
+```php
+<x-app-layout>
+
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Articles') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6 sm:px-20 bg-white border-b border-gray-200">
+                    <div class="flex justify-between mt-8">
+                        <div class=" text-2xl">
+                            Liste des articles
+                        </div>
+
+                        <div class="flex  items-center justify-center space-x-8">
+                            <a href="{{ route('articles.create') }}"
+                                class="text-gray-500 font-bold py-2 px-4 rounded hover:bg-gray-200 transition">Ajouter un
+                                article</a>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 text-gray-500">
+                        <table class="table-auto w-full">
+                            <thead>
+                                <tr class="uppercase text-left">
+                                    <th class="px-4 py-2 border">Titre</th>
+                                    <th class="px-4 py-2 border">Auteur</th>
+                                    <th class="px-4 py-2 border">Date de publication</th>
+                                    <th class="px-4 py-2 border">Dernière modification</th>
+                                    <th class="px-4 py-2 border">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($articles as $article)
+                                    <tr class="hover:bg-gray-50 odd:bg-gray-100 hover:odd:bg-gray-200 transition">
+                                        <td class="border px-4 py-2">
+                                            {{ $article->title }}</td>
+                                        <td class="border px-4 py-2">
+                                            {{ $article->user->name }}</td>
+                                        <td class="border px-4 py-2">
+                                            {{ $article->published_at?->diffForHumans() }}</td>
+                                        <td class="border px-4 py-2">
+                                            {{ $article->updated_at->diffForHumans() }}</td>
+                                        <td class="border px-4 py-2 space-x-4">
+                                            <a href="{{ route('articles.edit', $article->id) }}"
+                                                class="text-blue-400">Edit</a>
+                                            <form action="{{ route('articles.destroy', $article->id) }}" method="POST"
+                                                class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-400">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+                        <div class="mt-4">
+                            {{ $articles->links() }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</x-app-layout>
+```
+
+Cette vue utilise le layout `app.blade.php`. La page contient un tableau qui affiche la liste des articles. Nous avons aussi ajouté un lien pour créer un nouvel article. Pour chaque article, nous affichons le titre, l'auteur, la date de publication et la date de dernière modification. Nous avons aussi ajouté un lien pour modifier l'article et un bouton pour supprimer l'article.
+
+### Contrôleur pour la liste des articles
+
+Nous allons maintenant créer la méthode `index` dans le contrôleur `Admin/ArticleController`. Cette méthode va récupérer la liste des articles et la passer à la vue `admin/articles/index.blade.php`.
+
+```php
+    public function index()
+    {
+        $articles = Article::orderByDesc('updated_at')
+            ->paginate(10)
+        ;
+
+        return view(
+            'admin.articles.index',
+            [
+                'articles' => $articles,
+            ]
+        );
+    }
+```
+
+Nous utilisons la méthode `paginate` pour récupérer les articles par page. Nous avons choisi de récupérer 10 articles par page. Nous utilisons la méthode `orderByDesc` pour trier les articles par date de modification décroissante.
+
+## Lien vers la liste des articles dans le menu
+
+Nous allons maintenant ajouter un lien vers la liste des articles dans le menu de l'administration. Nous allons modifier le fichier `resources/views/layouts/navigation.blade.php` :
+
+```php
+<!-- Navigation Links -->
+<div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+        {{ __('Dashboard') }}
+    </x-nav-link>
+
+    <!--  Lien à ajouter -->
+    <x-nav-link :href="route('articles.index')" :active="request()->routeIs('articles.*')">
+        {{ __('Articles') }}
+    </x-nav-link>
+</div>
+```
+
+Nous avons ajouté un lien vers la liste des articles. La méthode `routeIs` permet de vérifier si la route actuelle correspond à un pattern. Dans notre cas, nous voulons vérifier si la route actuelle correspond à la route `articles.index` ou à la route `articles.create`, `articles.edit` ou `articles.destroy`. Nous utilisons le caractère `*` pour indiquer que la route peut être suivi d'un identifiant quelconque. Si la route actuelle correspond à l'un de ces patterns, le lien recevra la classe `active`.
+
+Nous devons aussi ajouter un lien pour le menu responsive, toujours dans le fichier `resources/views/layouts/navigation.blade.php` :
+
+```php
+    <!-- Responsive Navigation Menu -->
+    <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+
+            <!--  Lien à ajouter -->
+            <x-responsive-nav-link :href="route('articles.index')" :active="request()->routeIs('articles.*')">
+                {{ __('Articles') }}
+            </x-responsive-nav-link>
+        </div>
+    ...
+```
+
+## Création d'un article
+
+Nous allons maintenant créer une page pour créer un article. Nous allons créer un fichier `resources/views/admin/articles/create.blade.php` :
+
+```php
+<x-app-layout>
+
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Articles') }}
+        </h2>
+    </x-slot>
+
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-12">
+        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+            <div class="flex justify-between mt-8">
+                <div class=" text-2xl">
+                    Créer un article
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('articles.store') }}" class="flex flex-col space-y-4 text-gray-500">
+
+                @csrf
+
+                <div>
+                    <x-input-label for="title" :value="__('Titre')" />
+                    <x-text-input id="title" class="block mt-1 w-full" type="text" name="title"
+                        :value="old('title')" autofocus />
+                    <x-input-error :messages="$errors->get('title')" class="mt-2" />
+                </div>
+
+                <div>
+                    <x-input-label for="published_at" :value="__('Date de publication')" />
+                    <x-text-input id="published_at" class="block mt-1 w-full" type="date" name="published_at"
+                        :value="old('published_at')" />
+                    <x-input-error :messages="$errors->get('published_at')" class="mt-2" />
+                </div>
+
+                <div>
+                    <x-input-label for="body" :value="__('Texte de l\'article')" />
+                    <textarea id="body"
+                        class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                        name="body" rows="10">{{ old('body') }}</textarea>
+                    <x-input-error :messages="$errors->get('body')" class="mt-2" />
+                </div>
+
+                <div class="flex justify-end">
+                    <x-primary-button type="submit">
+                        {{ __('Créer') }}
+                    </x-primary-button>
+                </div>
+            </form>
+        </div>
+    </div>
+</x-app-layout>
+```
+
+Nous avons créé un formulaire pour créer un article. Nous utilisons les composants `x-input-label`, `x-text-input` et `x-input-error` pour afficher les labels, les champs de saisie et les messages d'erreur. Nous utilisons le composant `x-primary-button` pour afficher le bouton de création.
+
+Dans le contrôleur `app/Http/Controllers/ArticleController.php`, nous allons modifier la méthode `create` pour afficher la vue `resources/views/admin/articles/create.blade.php` :
+
+```php
+    public function create()
+    {
+        return view('admin.articles.create');
+    }
+```
+
+### Validation des données
+
+Lorsque on utilise un formulaire, il est important de valider les données reçues. Nous ne pouvons pas faire confiance aux données envoyées par l'utilisateur. Pour résoudre ce problème, Laravel permet d'utiliser des rêgles prédéfinies et de générer des messages d'erreur en cas de non respect de ces règles.
+
+Il y a plusieurs façons de valider les données. Nous allons utiliser les Form Requests. Pour créer un Form Request, nous allons utiliser la commande suivante :
+
+```bash
+php artisan make:request ArticleCreateRequest
+```
+
+Cette commande va créer un fichier `app/Http/Requests/ArticleCreateRequest.php`. Nous allons modifier ce fichier pour ajouter les règles de validation. On ne doit pas non plus oublier de renvoyer `true` dans la méthode `authorize()` :
+
+```php
+class ArticleStoreRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
+    public function authorize()
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, mixed>
+     */
+    public function rules()
+    {
+        return [
+            'title' => 'required|unique:articles|max:255',
+            'published_at' => 'nullable|date',
+            'body' => 'required|max:10000',
+        ];
+    }
+}
+```
+
+Pour le titre, nous avons ajouté les règles suivantes :
+
+- `required` : le titre est obligatoire
+- `unique:articles` : le titre doit être unique dans la table `articles`
+- `max:255` : le titre doit faire au maximum 255 caractères
+
+Pour la date de publication, nous avons ajouté les règles suivantes :
+
+- `nullable` : la date de publication est optionnelle
+- `date` : la date de publication doit être une date valide
+
+Pour le texte de l'article, nous avons ajouté les règles suivantes :
+
+- `required` : le texte de l'article est obligatoire
+- `max:10000` : le texte de l'article doit faire au maximum 10000 caractères
+
+Vous pouvez trouver la liste des règles disponibles sur la [documentation de Laravel](https://laravel.com/docs/10.x/validation#available-validation-rules).
+
+### Enregistrement des données
+
+Dans notre controller, nous allons modifier la méthode `store()` pour utiliser le Form Request et sauvegarder les données reçues.
+
+```php
+    public function store(ArticleStoreRequest $request)
+    {
+        $article = Article::make();
+        $article->title = $request->validated()['title'];
+        $article->body = $request->validated()['body'];
+        $article->published_at = $request->validated()['published_at'];
+        $article->user_id = Auth::id();
+        $article->save();
+
+        return redirect()->route('articles.index');
+    }
+```
+
+Premièrement, nous remplaçons le type `Request` du paramètre `$request` par celui de la Form Request `ArticleStoreRequest`. Laravel utilisera automatiquement cette classe pour valider les donées du formulaire.
+Ensuite, nous créons un nouvel article en utilisant la méthode `make()` du modèle `Article`.
+Nous utilisons la méthode `validated()` pour récupérer les données validées. Pour chaque propriété de l'article, nous récupérons la valeur correspondante dans le tableau de données validées. Nous récupérons également l'identifiant de l'utilisateur connecté et nous l'ajoutons à l'article. Nous sauvegardons l'article en base de données en utilisant la méthode `save()` du modèle. Enfin, nous redirigeons l'utilisateur vers la liste des articles.
+
+## Modification d'un article
+
+Pour modifier un article, nous allons utiliser la méthode `edit()` du contrôleur `ArticleController`. Cette méthode va afficher le formulaire de modification d'un article. Nous allons utiliser le formulaire de création d'un article comme base. Nous allons donc créer une vue `resources/views/admin/articles/edit.blade.php` :
+
+```php
+<x-app-layout>
+
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Articles') }}
+        </h2>
+    </x-slot>
+
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-12">
+        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+            <div class="flex justify-between mt-8">
+                <div class=" text-2xl">
+                    Modifier un article
+                </div>
+            </div>
+
+            <div class="text-gray-500">
+                <form method="POST" action="{{ route('articles.update', $article) }}" class="flex flex-col space-y-4">
+
+                    @csrf
+                    @method('PUT')
+
+                    <div>
+                        <x-input-label for="title" :value="__('Titre')" />
+                        <x-text-input id="title" class="block mt-1 w-full" type="text" name="title"
+                            :value="old('title', $article)" autofocus />
+                        <x-input-error :messages="$errors->get('title')" class="mt-2" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="published_at" :value="__('Date de publication')" />
+                        <x-text-input id="published_at" class="block mt-1 w-full" type="date" name="published_at"
+                            :value="old('published_at', $article->published_at?->toDateString())" />
+                        <x-input-error :messages="$errors->get('published_at')" class="mt-2" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="body" :value="__('Texte de l\'article')" />
+                        <textarea id="body"
+                            class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                            name="body" rows="10">{{ old('body', $article) }}</textarea>
+                        <x-input-error :messages="$errors->get('body')" class="mt-2" />
+                    </div>
+
+                    <div class="flex justify-end">
+                        <x-primary-button type="submit">
+                            {{ __('Modifier') }}
+                        </x-primary-button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
+```
+
+### Enregistrement des modifications
+
+D'abord, nous allons créer une nouvelle Form Request `ArticleUpdateRequest` pour valider les données reçues avec ces règles :
+
+```php
+public function rules()
+{
+    return [
+        'title' => 'required|string|max:255|unique:articles,title,'.$this->route('article')->id,
+        'published_at' => 'nullable|date',
+        'body' => 'required|string',
+    ];
+}
+```
+
+Nous avons ajouté la règle `unique:articles,title,{$id}` pour vérifier que le titre est unique dans la table `articles` sauf pour l'article en cours de modification. Pour récupérer l'identifiant de l'article en cours de modification, nous utilisons la méthode `route()` de la Form Request. Cette méthode permet de récupérer les paramètres de la route.
+
+Dans le controller, nous allons modifier la méthode `update()` pour utiliser le Form Request et sauvegarder les données reçues.
+
+```php
+public function update(UpdateArticleRequest $request, Article $article)
+{
+    $article->title = $request->validated()['title'];
+    $article->body = $request->validated()['body'];
+    $article->published_at = $request->validated()['published_at'];
+    $article->save();
+
+    return redirect()->back();
+}
+```
+
+Nous récupérons l'article à modifier en utilisant le modèle `Article` et le paramètre `Article $article` de la méthode `update()`. Nous utilisons la méthode `validated()` pour récupérer les données validées. Pour chaque propriété de l'article, nous récupérons la valeur correspondante dans le tableau de données validées. Nous sauvegardons l'article en base de données en utilisant la méthode `save()` du modèle. Enfin, nous redirigeons l'utilisateur vers la page précédente.
+
+## Suppression d'un article
+
+Pour supprimer un article, nous allons utiliser la méthode `destroy()` du contrôleur `ArticleController`. Cette méthode va supprimer l'article en base de données. Nous allons utiliser un formulaire pour envoyer la requête de suppression. Il est déjà présent dans la vue `resources/views/admin/articles/index.blade.php` :
+
+```php
+ <form action="{{ route('articles.destroy', $article->id) }}" method="POST"
+    class="inline">
+    @csrf
+    @method('DELETE')
+    <button type="submit" class="text-red-400">Delete</button>
+</form>
+```
+
+Nous utilisons la méthode `route()` pour générer l'URL de la route `articles.destroy` avec l'identifiant de l'article en paramètre. Nous utilisons la méthode `method()` pour générer le champ `@method('DELETE')` qui permet de simuler une requête de type `DELETE` avec une requête de type `POST`. Nous utilisons la méthode `csrf()` pour générer le champ `@csrf` qui permet de générer un jeton de sécurité pour la requête.
+
+Dans le controller, nous allons modifier la méthode `destroy()` pour supprimer l'article en base de données.
+
+```php
+public function destroy(Article $article)
+{
+    $article->delete();
+
+    return redirect()->back();
+}
+```
+
+Nous récupérons l'article à supprimer en utilisant le paramètre `Article $article` de la méthode `destroy()`. Nous utilisons la méthode `delete()` du modèle pour supprimer l'article en base de données. Enfin, nous redirigeons l'utilisateur vers la page précédente.
+
+### Modal de confirmation
+
+Nous allons utiliser une modal de confirmation pour demander à l'utilisateur de confirmer la suppression de l'article. Nous allons utiliser le composant `x-modal` fournit avec Laravel Breeze. Nous allons modifier la vue `resources/views/admin/articles/index.blade.php` pour utiliser ce composant :
+
+```php
+<x-app-layout>
+
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Articles') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6 sm:px-20 bg-white border-b border-gray-200">
+                    <div class="flex justify-between mt-8">
+                        <div class=" text-2xl">
+                            Liste des articles
+                        </div>
+
+                        <div class="flex  items-center justify-center space-x-8">
+                            <a href="{{ route('articles.create') }}"
+                                class="text-gray-500 font-bold py-2 px-4 rounded hover:bg-gray-200 transition">Ajouter
+                                un
+                                article</a>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 text-gray-500">
+                        <table class="table-auto w-full">
+                            <thead>
+                                <tr class="uppercase text-left">
+                                    <th class="px-4 py-2 border">Titre</th>
+                                    <th class="px-4 py-2 border">Auteur</th>
+                                    <th class="px-4 py-2 border">Date de publication</th>
+                                    <th class="px-4 py-2 border">Dernière modification</th>
+                                    <th class="px-4 py-2 border">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($articles as $article)
+                                    <tr class="hover:bg-gray-50 odd:bg-gray-100 hover:odd:bg-gray-200 transition">
+                                        <td class="border px-4 py-2">
+                                            {{ $article->title }}</td>
+                                        <td class="border px-4 py-2">
+                                            {{ $article->user->name }}</td>
+                                        <td class="border px-4 py-2">
+                                            {{ $article->published_at?->diffForHumans() ?? 'Pas de date' }}</td>
+                                        <td class="border px-4 py-2">
+                                            {{ $article->updated_at->diffForHumans() }}</td>
+                                        <td class="border px-4 py-2 space-x-4">
+                                            <a href="{{ route('articles.edit', $article->id) }}"
+                                                class="text-blue-400">Edit</a>
+
+                                            <button x-data="{ id: {{ $article->id }} }"
+                                                x-on:click.prevent="window.selected = id; $dispatch('open-modal', 'confirm-article-deletion');"
+                                                type="submit" class="text-red-400">Delete</button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+                        <div class="mt-4">
+                            {{ $articles->links() }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <x-modal name="confirm-article-deletion" focusable>
+            <form method="post" onsubmit="event.target.action= '/admin/articles/' + window.selected" class="p-6">
+                @csrf
+                @method('DELETE')
+
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    Êtes-vous sûr de vouloir supprimer cet article ?
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Cette action est irréversible. Toutes les données seront supprimées.
+                </p>
+
+                <div class="mt-6 flex justify-end">
+                    <x-secondary-button x-on:click="$dispatch('close')">
+                        Annuler
+                    </x-secondary-button>
+
+                    <x-danger-button class="ml-3" type="submit">
+                        Supprimer
+                    </x-danger-button>
+                </div>
+            </form>
+        </x-modal>
+    </div>
+</x-app-layout>
+```
+
+Le component modal utilise Alpine.js pour gérer l'affichage de la modal. Lorsque l'utilisateur clique sur le bouton `Delete`, nous définissons la variable `window.selected` avec l'identifiant de l'article à supprimer. Nous utilisons ensuite cette variable pour générer l'URL de la route `articles.destroy` dans le formulaire de la modal.
+
+## Upload d'images
+
+## Utiliser des icones
+
+## Recherche dans la liste des articles
+
+## Code source
+
+Le code source de ce tutoriel est disponible sur GitHub : [https://github.com/opmvpc/blog-cours](https://github.com/opmvpc/blog-cours)
