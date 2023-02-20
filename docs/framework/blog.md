@@ -1126,9 +1126,696 @@ Le component modal utilise Alpine.js pour gérer l'affichage de la modal. Lorsqu
 
 ## Upload d'images
 
+Pour uploader des images, nous allons modifier:
+
+- le formulaire de création et d'édition d'article pour ajouter un champ de type `file`
+- le controller pour gérer l'upload de l'image (méthode `store()` et `update()`)
+- Supprimer l'image lors de la suppression de l'article (méthode `destroy()`)
+
+### Formulaire
+
+Nous allons modifier la vue `resources/views/admin/articles/create.blade.php` :
+
+```php
+<x-app-layout>
+
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Articles') }}
+        </h2>
+    </x-slot>
+
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-12">
+        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+            <div class="flex justify-between mt-8">
+                <div class=" text-2xl">
+                    Créer un article
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('articles.store') }}" class="flex flex-col space-y-4 text-gray-500"
+                enctype="multipart/form-data">
+
+                @csrf
+
+                <div>
+                    <x-input-label for="title" :value="__('Titre')" />
+                    <x-text-input id="title" class="block mt-1 w-full" type="text" name="title"
+                        :value="old('title')" autofocus />
+                    <x-input-error :messages="$errors->get('title')" class="mt-2" />
+                </div>
+
+                <div>
+                    <x-input-label for="published_at" :value="__('Date de publication')" />
+                    <x-text-input id="published_at" class="block mt-1 w-full" type="date" name="published_at"
+                        :value="old('published_at')" />
+                    <x-input-error :messages="$errors->get('published_at')" class="mt-2" />
+                </div>
+
+                <div>
+                    <x-input-label for="img" :value="__('Image')" />
+                    <x-text-input id="img" class="block mt-1 w-full" type="file" name="img" />
+                    <x-input-error :messages="$errors->get('img')" class="mt-2" />
+                </div>
+
+                <div>
+                    <x-input-label for="body" :value="__('Texte de l\'article')" />
+                    <textarea id="body"
+                        class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                        name="body" rows="10">{{ old('body') }}</textarea>
+                    <x-input-error :messages="$errors->get('body')" class="mt-2" />
+                </div>
+
+                <div class="flex justify-end">
+                    <x-primary-button type="submit">
+                        {{ __('Créer') }}
+                    </x-primary-button>
+                </div>
+            </form>
+        </div>
+    </div>
+</x-app-layout>
+```
+
+Attention, nous avons ajouté l'attribut `enctype="multipart/form-data"` au formulaire pour indiquer que nous allons envoyer des données binaires (l'image). Si vous ne l'ajoutez pas, Laravel ne pourra pas récupérer les données de l'image et vous recevrez une erreur indiquant que l'image n'est pas d'un type autorisé.
+
+Nous allons également modifier la vue `resources/views/admin/articles/edit.blade.php` :
+
+```php
+<x-app-layout>
+
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Articles') }}
+        </h2>
+    </x-slot>
+
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-12">
+        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+            <div class="flex justify-between mt-8">
+                <div class=" text-2xl">
+                    Modifier un article
+                </div>
+            </div>
+
+            <div class="text-gray-500">
+                <form method="POST" action="{{ route('articles.update', $article) }}" class="flex flex-col space-y-4"
+                    enctype="multipart/form-data">
+
+                    @csrf
+                    @method('PUT')
+
+                    <div>
+                        <x-input-label for="title" :value="__('Titre')" />
+                        <x-text-input id="title" class="block mt-1 w-full" type="text" name="title"
+                            :value="old('title', $article)" autofocus />
+                        <x-input-error :messages="$errors->get('title')" class="mt-2" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="published_at" :value="__('Date de publication')" />
+                        <x-text-input id="published_at" class="block mt-1 w-full" type="date" name="published_at"
+                            :value="old('published_at', $article->published_at?->toDateString())" />
+                        <x-input-error :messages="$errors->get('published_at')" class="mt-2" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="img" :value="__('Image')" />
+                        @if ($article->img_path)
+                            <img src="{{ asset('storage/' . $article->img_path) }}" alt="Image de l'article"
+                                class="aspect-auto h-64 rounded shadow mt-2 mb-4 object-cover object-center">
+                        @endif
+                        <x-text-input id="img" class="block mt-1 w-full" type="file" name="img" />
+                        <x-input-error :messages="$errors->get('img')" class="mt-2" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="body" :value="__('Texte de l\'article')" />
+                        <textarea id="body"
+                            class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                            name="body" rows="10">{{ old('body', $article) }}</textarea>
+                        <x-input-error :messages="$errors->get('body')" class="mt-2" />
+                    </div>
+
+                    <div class="flex justify-end">
+                        <x-primary-button type="submit">
+                            {{ __('Modifier') }}
+                        </x-primary-button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
+```
+
+Nous avons ajouté un `@if` pour afficher l'image de l'article si elle existe. N'oubliez pas d'ajouter à nouveau le `enctype="multipart/form-data"` au formulaire.
+
+### Contrôleur
+
+Nous allons maintenant modifier le contrôleur `app/Http/Controllers/Admin/ArticleController.php` en commençant par la méthode `store` qui pour rappel permet de créer un nouvel article :
+
+```php
+public function store(ArticleStoreRequest $request)
+{
+    // On crée un nouvel article
+    $article = Article::make();
+
+    // On ajoute les propriétés de l'article
+    $article->title = $request->validated()['title'];
+    $article->body = $request->validated()['body'];
+    $article->published_at = $request->validated()['published_at'];
+    $article->user_id = Auth::id();
+
+
+    // Si il y a une image, on la sauvegarde
+    if ($request->hasFile('img')) {
+        $path = $request->file('img')->store('articles', 'public');
+        $article->img_path = $path;
+    }
+
+    // On sauvegarde l'article en base de données
+    $article->save();
+
+    return redirect()->route('articles.index');
+}
+```
+
+Nous avons ajouté une condition pour vérifier si l'utilisateur a envoyé une image. Si c'est le cas, on la sauvegarde dans le dossier `public/storage/articles` et on ajoute le chemin de l'image dans la propriété `img_path` de l'article.
+
+Nous allons maintenant modifier la méthode `update` qui permet de modifier un article :
+
+```php
+public function update(UpdateArticleRequest $request, Article $article)
+    {
+        // On modifies les propriétés de l'article
+        $article->title = $request->validated()['title'];
+        $article->body = $request->validated()['body'];
+        $article->published_at = $request->validated()['published_at'];
+
+        // Si il y a une image, on la sauvegarde
+        if ($request->hasFile('img')) {
+            $path = $request->file('img')->store('articles', 'public');
+            $article->img_path = $path;
+        }
+
+        // On sauvegarde les modifications en base de données
+        $article->save();
+
+        return redirect()->back();
+    }
+```
+
+Nous avons ajouté une condition pour vérifier si l'utilisateur a envoyé une image. Si c'est le cas, on la sauvegarde dans le dossier `public/storage/articles` et on ajoute le chemin de l'image dans la propriété `img_path` de l'article.
+
+Nous devons aussi modifier les deux FormRequest `app/Http/Requests/ArticleStoreRequest.php` et `app/Http/Requests/UpdateArticleRequest.php` pour ajouter la validation de l'image :
+
+```php
+public function rules()
+{
+    return [
+        'title' => 'required|unique:articles|max:255',
+        'published_at' => 'nullable|date',
+        'img' => 'nullable|image|max:2048',
+        'body' => 'required|max:10000',
+    ];
+}
+```
+
+et
+
+```php
+public function rules()
+{
+    return [
+        'title' => 'required|string|max:255|unique:articles,title,'.$this->route('article')->id,
+        'published_at' => 'nullable|date',
+        'img' => 'nullable|image|max:2048',
+        'body' => 'required|string',
+    ];
+}
+```
+
+Vous pouvez maintenant ajouter une image à vos articles depuis l'interface d'administration.
+
+Si cela ne fonctionne pas et que vous utilisez Laragon, vous devez effectuer les étapes suivantes :
+
+1. cliquez sur `Menu` puis `PHP` puis `php.ini`
+2. cherchez la ligne `;upload_tmp_dir =`
+3. supprimez le `;`
+4. ajoutez le chemin vers le dossier `tmp` de Laragon : `upload_tmp_dir = "C:\laragon\tmp"`
+5. redémarrez Laragon
+
+## Gestion des avatars
+
+Laravel Breeze fournit une page de gestion du profile de l'utilisateur connecté. Nous allons ajouter la gestion des avatars à cette page. Pour cela, nous allons modifier le fichier `resources/views/profile/edit.blade.php` :
+
+```html
+<x-app-layout>
+  <x-slot name="header">
+    <h2
+      class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight"
+    >
+      {{ __('Profile') }}
+    </h2>
+  </x-slot>
+
+  <div class="py-12">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+      <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+        <div class="max-w-xl">
+          @include('profile.partials.update-profile-information-form')
+        </div>
+      </div>
+
+      <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+        <div class="max-w-xl">
+          @include('profile.partials.update-avatar-form')
+        </div>
+      </div>
+
+      <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+        <div class="max-w-xl">
+          @include('profile.partials.update-password-form')
+        </div>
+      </div>
+
+      <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+        <div class="max-w-xl">
+          @include('profile.partials.delete-user-form')
+        </div>
+      </div>
+    </div>
+  </div>
+</x-app-layout>
+```
+
+Nous avons ajouté un bloc de code dans lequel on inclut le formulaire de modification de l'avatar. Pour cela, nous avons utilisé la directive `@include` de Blade. Elle permet d'inclure un fichier de vue dans une autre vue sans passer par le système de component de Laravel. Nous allons maintenant créer ce fichier `resources/views/profile/partials/update-avatar-form.blade.php` :
+
+```html
+<section>
+  <header>
+    <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+      {{ __('Avatar') }}
+    </h2>
+
+    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+      {{ __('Here you can change your avatar. It will be displayed on your
+      profile and on your articles.') }}
+    </p>
+  </header>
+
+  <form
+    method="post"
+    action="{{ route('profile.avatar.update') }}"
+    class="mt-6 space-y-6"
+    enctype="multipart/form-data"
+  >
+    @csrf @method('patch')
+
+    <div class="flex flex-col space-y-2">
+      <x-avatar :user="$user" class="h-20 w-20"></x-avatar>
+
+      <div class="">
+        <label
+          for="avatar"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-200"
+        >
+          {{ __('Avatar') }}
+        </label>
+
+        <div class="mt-1">
+          <input
+            type="file"
+            name="avatar"
+            id="avatar"
+            class="block w-full shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-500 dark:focus:border-gray-500 dark:placeholder-gray-400 dark:focus:ring-opacity-50 dark:focus:ring-offset-gray-800 dark:focus:ring-offset-opacity-50 dark:ring-offset-gray-800 dark:ring-offset-opacity-50 dark:ring-gray-500 dark:ring-opacity-50 rounded-md"
+          />
+        </div>
+
+        <x-input-error :messages="$errors->get('avatar')" class="mt-2" />
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <x-primary-button>{{ __('Save') }}</x-primary-button>
+
+      @if (session('status') === 'profile-updated')
+      <p
+        x-data="{ show: true }"
+        x-show="show"
+        x-transition
+        x-init="setTimeout(() => show = false, 2000)"
+        class="text-sm text-gray-600 dark:text-gray-400"
+      >
+        {{ __('Saved.') }}
+      </p>
+      @endif
+    </div>
+  </form>
+</section>
+```
+
+Nous avons ajouté un composant `x-avatar` qui affiche l'avatar de l'utilisateur que nous pourrons utiliser à plusieurs endroits de notre application. Nous allons maintenant créer ce composant dans le fichier `resources/views/components/avatar.blade.php` :
+
+```html
+<div {{ $attributes->
+  merge(['class' => 'rounded-full overflow-hidden']) }}> @if
+  ($user->avatar_path)
+  <img
+    class=" aspect-square object-cover object-center"
+    src="{{ asset('storage/' . $user->avatar_path) }}"
+    alt="{{ $user->name }}"
+  />
+  @else
+  <div class="flex items-center justify-center bg-indigo-100">
+    <span class="text-2xl font-medium text-indigo-800">
+      {{ $user->name[0] }}
+    </span>
+  </div>
+  @endif
+</div>
+```
+
+Nous allons maintenant ajouter une route pour la modification de l'avatar dans le fichier `routes/web.php`. Ajoutez la ligne suivante juste après la route de suppression du profil :
+
+```php
+// Gestion du profil utilisateur
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // On ajoute la route pour la modification de l'avatar
+    Route::patch('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+});
+```
+
+Nous allons maintenant créer la méthode `updateAvatar` dans le contrôleur `app/Http/Controllers/ProfileController.php` :
+
+```php
+public function updateAvatar(Request $request): RedirectResponse
+{
+    // Validation de l'image sans passer par une form request
+    $request->validate([
+        'avatar' => ['required', 'image', 'max:2048'],
+    ]);
+
+    // Si l'image est valide, on la sauvegarde
+    if ($request->hasFile('avatar')) {
+        $user = $request->user();
+        $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar_path = $path;
+        $user->save();
+    }
+
+    return Redirect::route('profile.edit')->with('status', 'avatar-updated');
+}
+```
+
+Cette méthode est très simple. Elle valide l'image envoyée par l'utilisateur, la sauvegarde dans le dossier `storage/app/public/avatars` et met à jour le chemin de l'avatar dans la base de données.
+
+Nous allons maintenant afficher l'avatar dans la page des détails d'un article. Pour cela, nous allons modifier le fichier `resources/views/articles/show.blade.php` :
+
+```html
+<x-guest-layout>
+  <h1 class="font-bold text-xl mb-4 capitalize">{{ $article->title }}</h1>
+
+  <div class="mb-4 text-xs text-gray-500">
+    {{ $article->published_at->diffForHumans() }}
+  </div>
+
+  <div class="flex items-center justify-center">
+    <img
+      src="{{ asset('storage/' . $article->img_path) }}"
+      alt="illustration de l'article"
+      class="rounded shadow aspect-auto object-cover object-center"
+    />
+  </div>
+
+  <div class="mt-4">{!! \nl2br($article->body) !!}</div>
+
+  <div class="flex mt-8">
+    <x-avatar class="h-20 w-20" :user="$article->user" />
+    <div class="ml-4 flex flex-col justify-center">
+      <div class="text-gray-700">{{ $article->user->name }}</div>
+      <div class="text-gray-500">{{ $article->user->email }}</div>
+    </div>
+  </div>
+
+  <div class="mt-8 flex items-center justify-center">
+    <a
+      href="{{ route('front.articles.index') }}"
+      class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow"
+    >
+      Retour à la liste des articles
+    </a>
+  </div>
+</x-guest-layout>
+```
+
+Nous avons ajouté le composant `x-avatar` qui affiche l'avatar de l'utilisateur qui a écrit l'article.
+
 ## Utiliser des icones
 
+### Installer le package
+
+Nous allons maintenant ajouter des icones à notre application. Nous allons utiliser le package [blade-ui-kit/blade-icons](https://blade-ui-kit.com/blade-icons)
+
+Pour installer ce package, lancez la commande suivante :
+
+```bash
+composer require blade-ui-kit/blade-icons
+```
+
+Plusieurs packs d'icones sont disponibles. Nous allons utiliser le pack Heroicons. Pour installer ce pack, lancez la commande suivante :
+
+```bash
+composer require blade-ui-kit/blade-heroicons
+```
+
+En fonction des icones que vous souhaitez utiliser, vous pouvez installer d'autres packs. Vous trouverez la commande d'installation dans la page de détail de chaque icone.
+
+### Utiliser les icones
+
+Pour voir la liste des icones disponibles, rendez-vous sur [https://blade-ui-kit.com/blade-icons#search](https://blade-ui-kit.com/blade-icons#search)
+
+```html
+<x-heroicon-o-heart class="w-6 h-6 text-gray-500" />
+```
+
+On peut ajouter des classes CSS pour modifier la taille et la couleur de l'icone.
+
+Nous allons maintenant ajouter une icone pour le bouton d'ajout, de modification et de suppression d'un article dans le fichier `resources/views/articles/index.blade.php` :
+
+```html
+<x-app-layout>
+  <x-slot name="header">
+    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+      {{ __('Articles') }}
+    </h2>
+  </x-slot>
+
+  <div class="py-12">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+      <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+        <div class="p-6 sm:px-20 bg-white border-b border-gray-200">
+          <div class="flex justify-between mt-8">
+            <div class="text-2xl">Liste des articles</div>
+
+            <div class="flex  items-center justify-center space-x-8">
+              <a
+                href="{{ route('articles.create') }}"
+                class="text-gray-500 font-bold py-2 px-4 rounded hover:bg-gray-200 transition flex items-center"
+              >
+                <x-heroicon-o-plus class="w-4 h-4 mr-2" />
+                Ajouter un article
+              </a>
+            </div>
+          </div>
+
+          <div class="mt-6 text-gray-500">
+            <table class="table-auto w-full">
+              <thead>
+                <tr class="uppercase text-left">
+                  <th class="px-4 py-2 border">Titre</th>
+                  <th class="px-4 py-2 border">Auteur</th>
+                  <th class="px-4 py-2 border">Date de publication</th>
+                  <th class="px-4 py-2 border">Dernière modification</th>
+                  <th class="px-4 py-2 border">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach ($articles as $article)
+                <tr
+                  class="hover:bg-gray-50 odd:bg-gray-100 hover:odd:bg-gray-200 transition"
+                >
+                  <td class="border px-4 py-2">{{ $article->title }}</td>
+                  <td class="border px-4 py-2">{{ $article->user->name }}</td>
+                  <td class="border px-4 py-2">
+                    {{ $article->published_at?->diffForHumans() ?? 'Pas de date'
+                    }}
+                  </td>
+                  <td class="border px-4 py-2">
+                    {{ $article->updated_at->diffForHumans() }}
+                  </td>
+                  <td class="border px-4 py-2 space-x-4">
+                    <div class="flex space-x-4">
+                      <a
+                        href="{{ route('articles.edit', $article->id) }}"
+                        class="text-blue-400"
+                      >
+                        <x-heroicon-o-pencil class="w-5 h-5" />
+                      </a>
+
+                      <button
+                        x-data="{ id: {{ $article->id }} }"
+                        x-on:click.prevent="window.selected = id; $dispatch('open-modal', 'confirm-article-deletion');"
+                        type="submit"
+                        class="text-red-400"
+                      >
+                        <x-heroicon-o-trash class="w-5 h-5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+
+            <div class="mt-4">{{ $articles->links() }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <x-modal name="confirm-article-deletion" focusable>
+      <form
+        method="post"
+        onsubmit="event.target.action= '/admin/articles/' + window.selected"
+        class="p-6"
+      >
+        @csrf @method('DELETE')
+
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+          Êtes-vous sûr de vouloir supprimer cet article ?
+        </h2>
+
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          Cette action est irréversible. Toutes les données seront supprimées.
+        </p>
+
+        <div class="mt-6 flex justify-end">
+          <x-secondary-button x-on:click="$dispatch('close')">
+            Annuler
+          </x-secondary-button>
+
+          <x-danger-button class="ml-3" type="submit">
+            Supprimer
+          </x-danger-button>
+        </div>
+      </form>
+    </x-modal>
+  </div>
+</x-app-layout>
+```
+
+On a ajouté les lignes suivantes :
+
+```html
+<x-heroicon-o-plus class="w-4 h-4 mr-2" />
+```
+
+```html
+<x-heroicon-o-pencil class="w-5 h-5" />
+```
+
+```html
+<x-heroicon-o-trash class="w-5 h-5" />
+```
+
 ## Recherche dans la liste des articles
+
+Nous allons ajouter une barre de recherche à la liste des articles de la page `/articles`. Pour cela, nous allons modifier la méthode `index` du controller `ArticleController` et la vue `resources/views/articles/index.blade.php`.
+
+### Controller
+
+Dans le controller `ArticleController`, nous allons modifier la méthode `index` pour ajouter des clauses `where` à la requête de récupération des articles qui prendront en compte la recherche de l'utilisateur.
+
+```php
+public function index(Request $request)
+{
+    $articles = Article::where('published_at', '<', now())
+        ->where('body', 'LIKE', '%'.$request->query('search').'%')
+        ->orWhere('title', 'LIKE', '%'.$request->query('search').'%')
+        ->orWhereHas('user', function ($query) use ($request) {
+            $query->where('name', 'LIKE', '%'.$request->query('search').'%');
+        })
+        ->orderByDesc('published_at')
+        ->paginate(12)
+    ;
+
+    return view('articles.index', [
+        'articles' => $articles,
+    ]);
+}
+```
+
+Nous avons ajouté les lignes suivantes :
+
+```php
+->where('body', 'LIKE', '%'.$request->query('search').'%')
+->orWhere('title', 'LIKE', '%'.$request->query('search').'%')
+->orWhereHas('user', function ($query) use ($request) {
+    $query->where('name', 'LIKE', '%'.$request->query('search').'%');
+})
+```
+
+La méthode `where` permet de filtrer les résultats de la requête. La méthode `orWhere` permet d'ajouter une clause `OR` à la requête. La méthode `orWhereHas` permet d'ajouter une clause `OR` à la requête en vérifiant si une relation existe.
+
+1. La première clause `where` permet de filtrer les articles dont le texte contient la chaîne de caractères recherchée.
+2. La deuxième clause `orWhere` permet de filtrer les articles dont le titre contient la chaîne de caractères recherchée.
+3. La troisième clause `orWhereHas` permet de filtrer les articles dont l'auteur contient la chaîne de caractères recherchée.
+
+### Vue
+
+Dans la vue `resources/views/articles/index.blade.php`, nous allons ajouter un formulaire de recherche à la page. Il utilisera la méthode `GET` et la route `articles.index` qui est la route qui pointe vers la méthode `index` du controller `ArticleController`.
+
+```html
+<x-guest-layout>
+  <h1 class="font-bold text-xl mb-4">Liste des articles</h1>
+
+  <form action="{{ route('front.articles.index') }}" method="GET" class="mb-4">
+    <div class="flex items-center">
+      <input
+        type="text"
+        name="search"
+        id="search"
+        placeholder="Rechercher un article"
+        class="flex-grow border border-gray-300 rounded shadow px-4 py-2 mr-4"
+        value="{{ request()->search }}"
+        autofocus
+      />
+      <button
+        type="submit"
+        class="bg-white text-gray-600 px-4 py-2 rounded-lg shadow"
+      >
+        <x-heroicon-o-magnifying-glass class="h-5 w-5" />
+      </button>
+    </div>
+  </form>
+
+  <ul class="grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8">
+    @foreach ($articles as $article)
+    <li>
+      <x-article-card :article="$article" />
+    </li>
+    @endforeach
+  </ul>
+
+  <div class="mt-8">{{ $articles->links() }}</div>
+</x-guest-layout>
+```
+
+Nous avons aussi ajouté un attribut `value` à l'input de recherche pour que la valeur de la recherche soit toujours présente dans le champ de recherche après avoir soumis le formulaire.
 
 ## Code source
 
