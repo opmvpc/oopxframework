@@ -2726,6 +2726,166 @@ Vous pouvez maintenant faire la même chose pour protéger la partie articles. V
 
 ## Système de commentaires
 
+Nous allons ajouter un système de commentaires à notre blog. Les utilisateurs connectés pourront commenter les articles. Les administrateurs pourront supprimer les commentaires.
+
+Pour cela, nous allons devoir créer un modèle Comment et une table comments dans la base de données. La table comments aura les champs suivants:
+
+- id
+- article_id
+- user_id
+- body
+- created_at
+- updated_at
+
+Le modèle Comment aura les relations suivantes:
+
+- article: belongsTo
+- user: belongsTo
+
+Nous devrons aussi définir les relations inverse dans les modèles Article et User.
+
+Ensuite, nous devrons modifier l'`ArticleController` pour ajouter la possibilité de commenter un article. Nous allons aussi modifier la vue `show` pour afficher les commentaires et ajouter un formulaire pour ajouter un commentaire.
+
+Nous n'oublierons pas de gérer les autorisations pour les commentaires.
+
+### Modèle Comment
+
+Nous allons créer le modèle Comment avec la commande artisan:
+
+```bash
+php artisan make:model Comment -mfs
+```
+
+Nous avons utilisé les options `-mfs` pour créer le modèle, la migration, la factory et le seeder en une seule commande.
+
+Nous allons d'abord modifier le fichier de migration `create_comments_table` pour ajouter les champs `body`, `article_id` et `user_id`:
+
+```php
+public function up()
+{
+    Schema::create('comments', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('article_id')->nullable()->constrained()->nullOnDelete();
+        $table->text('body');
+        $table->timestamps();
+    });
+}
+```
+
+Nous avons ajouté les champs `user_id` et `article_id` qui seront utilisés pour les relations. Nous avons aussi ajouté le champ `body` qui contiendra le texte du commentaire.
+
+Nous allons ensuite modifier le modèle Comment pour ajouter les relations:
+
+```php
+class Comment extends Model
+{
+    use HasFactory;
+
+    public function article()
+    {
+        return $this->belongsTo(Article::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+```
+
+Nous devons aussi modifier les modèles Article et User pour ajouter les relations inverses:
+
+```php
+class Article extends Model
+{
+    // ... code précédent
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+}
+```
+
+et
+
+```php
+class User extends Authenticatable
+{
+    // ... code précédent
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+}
+```
+
+### Données de test
+
+Nous allons ajouter des données de test pour les commentaires. Nous allons modifier la `CommentFactory` pour générer des données aléatoires:
+
+```php
+class CommentFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition()
+    {
+        return [
+            // n'importe quel utilisateur
+            'user_id' => \App\Models\User::get()->random()->id,
+            // n'importe quel article
+            'article_id' => \App\Models\Article::get()->random()->id,
+            // un texte aléatoire de 20 à 400 caractères
+            'body' => fake()->realTextBetween($minNbChars = 20, $maxNbChars = 400),
+            // une date aléatoire entre -2 mois et maintenant
+            'created_at' => fake()->dateTimeBetween('-2 months', 'now'),
+        ];
+    }
+}
+```
+
+Nous allons modifier le seeder `CommentSeeder` pour utiliser la factory:
+
+```php
+class CommentSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run()
+    {
+        \App\Models\Comment::factory(300)->create();
+    }
+}
+```
+
+Nous allons ensuite modifier la méthode `run` du seeder `DatabaseSeeder` pour appeler le seeder `CommentSeeder`:
+
+```php
+    public function run()
+    {
+        // On appelle les seeders dans l'ordre pour éviter les erreurs de clés étrangères
+        $this->call([
+            RoleSeeder::class,
+            UserSeeder::class,
+            ArticleSeeder::class,
+            CommentSeeder::class,
+        ]);
+    }
+```
+
+Vous pouvez maintenant recréer la base de données et exécuter les seeders:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
 ## Code source
 
 Le code source de ce tutoriel est disponible sur GitHub : [https://github.com/opmvpc/blog-cours](https://github.com/opmvpc/blog-cours)
