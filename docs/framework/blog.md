@@ -2726,6 +2726,980 @@ Vous pouvez maintenant faire la même chose pour protéger la partie articles. V
 
 ## Système de commentaires
 
+Nous allons ajouter un système de commentaires à notre blog. Les utilisateurs connectés pourront commenter les articles. Les administrateurs et le propriétaire d'un article pourront supprimer les commentaires.
+
+Pour cela, nous allons devoir créer un modèle Comment et une table comments dans la base de données. La table comments aura les champs suivants:
+
+- id
+- article_id
+- user_id
+- body
+- created_at
+- updated_at
+
+Le modèle Comment aura les relations suivantes:
+
+- article: belongsTo
+- user: belongsTo
+
+Nous devrons aussi définir les relations inverse dans les modèles Article et User.
+
+Ensuite, nous devrons modifier l'`ArticleController` pour ajouter la possibilité de commenter un article. Nous allons aussi modifier la vue `show` pour afficher les commentaires et ajouter un formulaire pour ajouter un commentaire.
+
+Nous n'oublierons pas de gérer les autorisations pour les commentaires.
+
+### Modèle Comment
+
+Nous allons créer le modèle Comment avec la commande artisan:
+
+```bash
+php artisan make:model Comment -mfs
+```
+
+Nous avons utilisé les options `-mfs` pour créer le modèle, la migration, la factory et le seeder en une seule commande.
+
+Nous allons d'abord modifier le fichier de migration `create_comments_table` pour ajouter les champs `body`, `article_id` et `user_id`:
+
+```php
+public function up()
+{
+    Schema::create('comments', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('article_id')->nullable()->constrained()->nullOnDelete();
+        $table->text('body');
+        $table->timestamps();
+    });
+}
+```
+
+Nous avons ajouté les champs `user_id` et `article_id` qui seront utilisés pour les relations. Nous avons aussi ajouté le champ `body` qui contiendra le texte du commentaire.
+
+Nous allons ensuite modifier le modèle Comment pour ajouter les relations:
+
+```php
+class Comment extends Model
+{
+    use HasFactory;
+
+    public function article()
+    {
+        return $this->belongsTo(Article::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+```
+
+Nous devons aussi modifier les modèles Article et User pour ajouter les relations inverses:
+
+```php
+class Article extends Model
+{
+    // ... code précédent
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+}
+```
+
+et
+
+```php
+class User extends Authenticatable
+{
+    // ... code précédent
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+}
+```
+
+### Données de test
+
+Nous allons ajouter des données de test pour les commentaires. Nous allons modifier la `CommentFactory` pour générer des données aléatoires:
+
+```php
+class CommentFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition()
+    {
+        return [
+            // n'importe quel utilisateur
+            'user_id' => \App\Models\User::get()->random()->id,
+            // n'importe quel article
+            'article_id' => \App\Models\Article::get()->random()->id,
+            // un texte aléatoire de 20 à 400 caractères
+            'body' => fake()->realTextBetween($minNbChars = 20, $maxNbChars = 400),
+            // une date aléatoire entre -2 mois et maintenant
+            'created_at' => fake()->dateTimeBetween('-2 months', 'now'),
+        ];
+    }
+}
+```
+
+Nous allons modifier le seeder `CommentSeeder` pour utiliser la factory:
+
+```php
+class CommentSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run()
+    {
+        \App\Models\Comment::factory(300)->create();
+    }
+}
+```
+
+Nous allons ensuite modifier la méthode `run` du seeder `DatabaseSeeder` pour appeler le seeder `CommentSeeder`:
+
+```php
+    public function run()
+    {
+        // On appelle les seeders dans l'ordre pour éviter les erreurs de clés étrangères
+        $this->call([
+            RoleSeeder::class,
+            UserSeeder::class,
+            ArticleSeeder::class,
+            CommentSeeder::class,
+        ]);
+    }
+```
+
+Vous pouvez maintenant recréer la base de données et exécuter les seeders:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+### Contrôleur ArticleController
+
+Nous allons modifier le contrôleur `ArticleController` de la partie front-office de notre blog pour afficher les commentaires.
+
+Nous allons modifier la méthode `show` pour récupérer les commentaires de l'article et les passer à la vue:
+
+```php
+public function show($id)
+{
+    // On récupère l'article et on renvoie une erreur 404 si l'article n'existe pas
+    $article = Article::findOrFail($id);
+    // On récupère les commentaires de l'article, avec les utilisateurs associés (via la relation)
+    // On les trie par date de création (le plus ancien en premier)
+    $comments = $article
+        ->comments()
+        ->with('user')
+        ->orderBy('created_at')
+        ->get()
+    ;
+
+    // On renvoie la vue avec les données
+    return view('articles.show', [
+        'article' => $article,
+        'comments' => $comments,
+    ]);
+}
+```
+
+Nous allons ensuite modifier la vue `articles.show` pour afficher les commentaires:
+
+```php
+<x-guest-layout>
+    <h1 class="font-bold text-xl mb-4 capitalize">{{ $article->title }}</h1>
+
+    <div class="mb-4 text-xs text-gray-500">
+        {{ $article->published_at->diffForHumans() }}
+    </div>
+
+    <div class="flex items-center justify-center">
+        <img src="{{ asset('storage/' . $article->img_path) }}" alt="illustration de l'article"
+            class="rounded shadow aspect-auto object-cover object-center">
+    </div>
+
+    <div class="mt-4">
+        {!! \nl2br($article->body) !!}
+    </div>
+
+    <div class="flex mt-8">
+        <x-avatar class="h-20 w-20" :user="$article->user" />
+        <div class="ml-4 flex flex-col justify-center">
+            <div class="text-gray-700">
+                {{ $article->user->name }}
+            </div>
+            <div class="text-gray-500">
+                {{ $article->user->email }}
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 flex items-center justify-center">
+        <a href="{{ route('front.articles.index') }}" class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow">
+            Retour à la liste des articles
+        </a>
+    </div>
+
+    <div class="mt-8">
+        <h2 class="font-bold text-xl mb-4">Commentaires</h2>
+
+        <div class="flex-col space-y-4">
+            @forelse ($article->comments as $comment)
+                <div class="flex bg-white rounded-md shadow p-4 space-x-4">
+                    <div class="flex justify-start items-start h-full">
+                        <x-avatar class="h-10 w-10" :user="$comment->user" />
+                    </div>
+                    <div class="flex flex-col justify-center">
+                        <div class="text-gray-700">
+                            {{ $comment->user->name }}
+                        </div>
+                        <div class="text-gray-500">
+                            {{ $comment->created_at->diffForHumans() }}
+                        </div>
+                        <div class="text-gray-700">
+                            {{ $comment->body }}
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="flex bg-white rounded-md shadow p-4 space-x-4">
+                    Aucun commentaire pour l'instant
+                </div>
+            @endforelse
+        </div>
+</x-guest-layout>
+```
+
+Si vous visitez la page d'un article, vous devriez voir les commentaires en bas de la page.
+
+### Routes pour les commentaires
+
+Nous allons maintenant ajouter les routes pour les commentaires, après la route `front.articles.show`:
+
+```php
+// ... autres routes
+
+// Détail d'un article
+Route::get('/articles/{id}', [ArticleController::class, 'show'])->name('front.articles.show');
+
+// Gestion des commentaires, uniquement pour les utilisateurs authentifiés
+Route::middleware('auth')->group(function () {
+    // Ajout d'un commentaire
+    Route::post('/articles/{article}/comments', [ArticleController::class, 'addComment'])->name('front.articles.comments.add');
+    // Suppression d'un commentaire
+    Route::delete('/articles/{article}/comments/{comment}', [ArticleController::class, 'deleteComment'])->name('front.articles.comments.delete');
+});
+
+// ... autres routes
+```
+
+Nous avons donc ajouté deux routes:
+
+- `front.articles.comments.add` pour ajouter un commentaire
+- `front.articles.comments.delete` pour supprimer un commentaire
+
+### Méthodes addComment et deleteComment
+
+Nous allons maintenant ajouter les méthodes `addComment` et `deleteComment` au contrôleur `ArticleController`.
+
+Nous allons commencer par la méthode `addComment`:
+
+```php
+public function addComment(Request $request, Article $article)
+{
+    // On vérifie que l'utilisateur est authentifié
+    $request->validate([
+        'body' => 'required|string|max:2000',
+    ]);
+
+    // On crée le commentaire
+    $comment = $article->comments()->make();
+    // On remplit les données
+    $comment->body = $request->input('body');
+    $comment->user_id = auth()->user()->id;
+    // On sauvegarde le commentaire
+    $comment->save();
+
+    // On redirige vers la page de l'article
+    return redirect()->back();
+}
+```
+
+Nous allons ensuite ajouter la méthode `deleteComment`:
+
+```php
+public function deleteComment(Article $article, Comment $comment)
+{
+    // On vérifie que l'utilisateur à le droit de supprimer le commentaire
+    $this->authorize('delete', $comment);
+
+    // On supprime le commentaire
+    $comment->delete();
+
+    // On redirige vers la page de l'article
+    return redirect()->back();
+}
+```
+
+Vous noterez que nous utilisons la méthode `authorize` du controller pour vérifier que l'utilisateur a le droit de supprimer le commentaire à la place de la méthode `authorize` du `Gate`. C'est une autre façon de faire, le résultat est le même.
+
+### Autorisation
+
+Nous allons maintenant ajouter une autorisation pour la suppression d'un commentaire.
+
+Nous allons créer un fichier `CommentPolicy.php` à l'aide de la commande suivante:
+
+```bash
+php artisan make:policy CommentPolicy
+```
+
+Nous allons ensuite modifier le fichier `app/Policies/CommentPolicy.php` pour ajouter la méthode `delete`:
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Comment;
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class CommentPolicy
+{
+    use HandlesAuthorization;
+
+    /**
+     * Create a new policy instance.
+     */
+    public function __construct()
+    {
+    }
+
+    public function delete(User $user, Comment $comment)
+    {
+        // Seul l'administateur ou le créateur du commentaire peut supprimer un commentaire
+        return \App\Models\Role::ADMIN === $user->role->name || $user->id === $comment->user_id;
+    }
+}
+```
+
+On vérifie que l'utilisateur est soit l'administrateur soit qu'il est le créateur du commentaire en comparant les identifiants.
+
+### Formulaire de création de commentaire
+
+Nous allons maintenant ajouter un formulaire pour créer un commentaire et ajouter le bouton de suppression d'un commentaire visible uniquement par l'administrateur et le créateur du commentaire.
+
+Nous allons modifier la vue `articles.show` pour ajouter le formulaire et le bouton de suppression:
+
+```html
+<x-guest-layout>
+  <h1 class="font-bold text-xl mb-4 capitalize">{{ $article->title }}</h1>
+
+  <div class="mb-4 text-xs text-gray-500">
+    {{ $article->published_at->diffForHumans() }}
+  </div>
+
+  <div class="flex items-center justify-center">
+    <img
+      src="{{ asset('storage/' . $article->img_path) }}"
+      alt="illustration de l'article"
+      class="rounded shadow aspect-auto object-cover object-center"
+    />
+  </div>
+
+  <div class="mt-4">{!! \nl2br($article->body) !!}</div>
+
+  <div class="flex mt-8">
+    <x-avatar class="h-20 w-20" :user="$article->user" />
+    <div class="ml-4 flex flex-col justify-center">
+      <div class="text-gray-700">{{ $article->user->name }}</div>
+      <div class="text-gray-500">{{ $article->user->email }}</div>
+    </div>
+  </div>
+
+  <div class="mt-8 flex items-center justify-center">
+    <a
+      href="{{ route('front.articles.index') }}"
+      class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow"
+    >
+      Retour à la liste des articles
+    </a>
+  </div>
+
+  <div class="mt-8">
+    <h2 class="font-bold text-xl mb-4">Commentaires</h2>
+
+    <div class="flex-col space-y-4">
+      @forelse ($article->comments as $comment)
+      <div class="flex bg-white rounded-md shadow p-4 space-x-4">
+        <div class="flex justify-start items-start h-full">
+          <x-avatar class="h-10 w-10" :user="$comment->user" />
+        </div>
+        <div class="flex flex-col justify-center w-full space-y-4">
+          <div class="flex justify-between">
+            <div class="flex space-x-4 items-center justify-center">
+              <div class="flex flex-col justify-center">
+                <div class="text-gray-700">{{ $comment->user->name }}</div>
+                <div class="text-gray-500 text-sm">
+                  {{ $comment->created_at->diffForHumans() }}
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-center">
+              @can('delete', $comment)
+              <button
+                x-data="{ id: {{ $comment->id }} }"
+                x-on:click.prevent="window.selected = id; $dispatch('open-modal', 'confirm-comment-deletion');"
+                type="submit"
+                class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow"
+              >
+                <x-heroicon-o-trash class="h-5 w-5" />
+              </button>
+              @endcan
+            </div>
+          </div>
+          <div class="flex flex-col justify-center w-full text-gray-700">
+            <p class="border bg-gray-100 rounded-md p-4">
+              {{ $comment->body }}
+            </p>
+          </div>
+        </div>
+      </div>
+      @empty
+      <div class="flex bg-white rounded-md shadow p-4 space-x-4">
+        Aucun commentaire pour l'instant
+      </div>
+      @endforelse @auth
+      <form
+        action="{{ route('front.articles.comments.add', $article) }}"
+        method="POST"
+        class="flex bg-white rounded-md shadow p-4"
+      >
+        @csrf
+        <div class="flex justify-start items-start h-full mr-4">
+          <x-avatar class="h-10 w-10" :user="auth()->user()" />
+        </div>
+        <div class="flex flex-col justify-center w-full">
+          <div class="text-gray-700">{{ auth()->user()->name }}</div>
+          <div class="text-gray-500 text-sm">{{ auth()->user()->email }}</div>
+          <div class="text-gray-700">
+            <textarea
+              name="body"
+              id="body"
+              rows="4"
+              placeholder="Votre commentaire"
+              class="w-full rounded-md shadow-sm border-gray-300 bg-gray-100 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 mt-4"
+            ></textarea>
+          </div>
+          <div class="text-gray-700 mt-2 flex justify-end">
+            <button
+              type="submit"
+              class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow"
+            >
+              Ajouter un commentaire
+            </button>
+          </div>
+        </div>
+      </form>
+      @else
+      <div
+        class="flex bg-white rounded-md shadow p-4 text-gray-700 justify-between items-center"
+      >
+        <span> Vous devez être connecté pour ajouter un commentaire </span>
+        <a
+          href="{{ route('login') }}"
+          class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow-md"
+          >Se connecter</a
+        >
+      </div>
+      @endauth
+    </div>
+    <x-modal name="confirm-comment-deletion" focusable>
+      <form
+        method="post"
+        onsubmit="event.target.action= '/articles/{{ $article->id }}/comments/' + window.selected"
+        class="p-6"
+      >
+        @csrf @method('DELETE')
+
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+          Êtes-vous sûr de vouloir supprimer ce commentaire ?
+        </h2>
+
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          Cette action est irréversible. Toutes les données seront supprimées.
+        </p>
+
+        <div class="mt-6 flex justify-end">
+          <x-secondary-button x-on:click="$dispatch('close')">
+            Annuler
+          </x-secondary-button>
+
+          <x-danger-button class="ml-3" type="submit">
+            Supprimer
+          </x-danger-button>
+        </div>
+      </form>
+    </x-modal>
+  </div>
+</x-guest-layout>
+```
+
+Nous avons maintenant un formulaire pour ajouter un commentaire, et un bouton pour supprimer un commentaire. Nous avons également ajouté un modal pour confirmer la suppression d'un commentaire.
+
+Vous pouvez maintenant essayer d'écrire un commentaire, puis de le supprimer pour voir si tout fonctionne correctement. Si vous avez des erreurs, vérifiez que vous avez bien suivi les étapes précédentes.
+
+### Failles XSS
+
+Les failles XSS sont des failles de sécurité qui permettent à un attaquant d'exécuter du code JavaScript dans le navigateur d'un utilisateur. Cela peut être utilisé pour voler des informations confidentielles, des cookies, ou pour envoyer des données à un serveur malveillant.
+
+Pour faire cela, un attaquant peut envoyer un commentaire avec du code JavaScript. Par exemple, si un utilisateur peut ajouter un commentaire, il peut envoyer le commentaire suivant :
+
+```html
+<script>
+  alert("Hello world");
+</script>
+```
+
+Lorsque le navigateur de l'utilisateur affichera le commentaire, il exécutera le code JavaScript. Cela peut être utilisé pour voler des informations confidentielles, des cookies, ou pour envoyer des données à un serveur malveillant.
+
+Pour éviter cela, Nous utilisons depuis le début du cours les doubles moustaches `{{ }}` pour afficher des données. Cela permet d'échapper automatiquement les données pour éviter les failles XSS.
+
+Vous pouvez aussi supprimer les balises HTML avec la fonction `strip_tags` de php :
+
+```php
+$body = strip_tags($request->body);
+```
+
+Faites toujours attention aux données que vous pouvez recevoir de l'utilisateur. Si vous utilisez une librairie tierce, vérifiez que celle-ci n'est pas vulnérable aux failles XSS.
+
+### Afficher le nombre de commentaires
+
+Nous allons maintenant afficher le nombre de commentaires sur l'article. Pour cela, nous allons devoir modifier les méthodes `index` de `HomepageController` et `ArticlesController` pour récupérer le nombre de commentaires.
+
+Commençons par modifier la méthode `index` de `HomepageController` :
+
+```php
+public function index()
+{
+    $articles = Article::where('published_at', '<', now())
+        ->withCount('comments')
+        ->orderByDesc('published_at')
+        ->take(4)
+        ->get()
+    ;
+
+    return view('homepage.index', [
+        'articles' => $articles,
+    ]);
+}
+```
+
+Nous avons ajouté la méthode `withCount` pour récupérer le nombre de commentaires. Cela va ajouter une colonne `comments_count` à chaque article.
+
+Nous allons maintenant modifier la méthode `index` de `ArticlesController` :
+
+```php
+public function index(Request $request)
+{
+    $articles = Article::where('published_at', '<', now())
+        ->where('body', 'LIKE', '%'.$request->query('search').'%')
+        ->orWhere('title', 'LIKE', '%'.$request->query('search').'%')
+        ->orWhereHas('user', function ($query) use ($request) {
+            $query->where('name', 'LIKE', '%'.$request->query('search').'%');
+        })
+        ->withCount('comments')
+        ->orderByDesc('published_at')
+        ->paginate(12)
+    ;
+
+    return view('articles.index', [
+        'articles' => $articles,
+    ]);
+}
+```
+
+Même chose ici, nous avons ajouté la méthode `withCount` pour récupérer le nombre de commentaires.
+
+Nous allons maintenant modifier le component `article-card` pour afficher le nombre de commentaires :
+
+```html
+<a
+  class="flex flex-col h-full space-y-4 bg-white rounded-md shadow-md p-5 w-full hover:shadow-lg hover:scale-105 transition"
+  href="{{ route('front.articles.show', $article) }}"
+>
+  <img
+    src="{{ asset('storage/' . $article->img_path) }}"
+    alt="illustration de l'article"
+  />
+  <div class="uppercase font-bold text-gray-800">{{ $article->title }}</div>
+  <div class="flex-grow text-gray-700 text-sm text-justify">
+    {{ Str::limit($article->body, 120) }}
+  </div>
+  <div class="flex justify-between items-center">
+    <div class="text-sm text-gray-500">
+      {{ $article->published_at->diffForHumans() }}
+    </div>
+    <div class="flex items-center space-x-2">
+      <x-heroicon-o-chat-bubble-bottom-center-text
+        class="h-5 w-5 text-gray-500"
+      />
+      <div class="text-sm text-gray-500">{{ $article->comments_count }}</div>
+    </div>
+  </div>
+</a>
+```
+
+Nous avons ajouté un icône et le nombre de commentaires en bas à droite de la carte.
+
+Vous pouvez maintenant essayer d'ajouter un commentaire, puis de voir si le nombre de commentaires est bien mis à jour.
+
+## Profil public des utilisateurs
+
+Nous allons maintenant ajouter un profil public pour les utilisateurs. Nous allons afficher les articles publiés par l'utilisateur, et les commentaires qu'il a écrit.
+
+### Créer la route
+
+Nous allons commencer par créer la route pour afficher le profil public d'un utilisateur. Placez cette route dans le fichier `routes/web.php`, juste en dessous des routes de gestion du profil :
+
+```php
+// Gestion du profil utilisateur
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+});
+
+// Détail d'un profil utilisateur
+Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
+```
+
+### Controller
+
+Nous allons ajouter une méthode `show` au début du controller `ProfileController` :
+
+```php
+public function show(User $user): View
+{
+    // Les articles publiés par l'utilisateur
+    $articles = $user
+        ->articles()
+        ->where('published_at', '<', now())
+        ->withCount('comments')
+        ->orderByDesc('published_at')
+        ->get()
+    ;
+
+    // Les commentaires de l'utilisateur triés par date de création
+    $comments = $user
+        ->comments()
+        ->orderByDesc('created_at')
+        ->get()
+    ;
+
+    // On renvoie la vue avec les données
+    return view('profile.show', [
+        'user' => $user,
+        'articles' => $articles,
+        'comments' => $comments,
+    ]);
+}
+```
+
+Nous récupérons les articles publiés par l'utilisateur, et les commentaires qu'il a écrit.
+
+### Vue
+
+Nous allons maintenant créer la vue `profile.show` :
+
+```html
+<x-guest-layout>
+  <div class="flex w-full">
+    <x-avatar class="h-20 w-20" :user="$user" />
+    <div class="ml-4 flex flex-col">
+      <div class="text-gray-800 font-bold">{{ $user->name }}</div>
+      <div class="text-gray-700 text-sm">{{ $user->email }}</div>
+      <div class="text-gray-500 text-xs">{{ $user->role->name }}</div>
+      <div class="text-gray-500 text-xs">
+        Membre depuis {{ $user->created_at->diffForHumans() }}
+      </div>
+    </div>
+  </div>
+  <div class="mt-8">
+    <h2 class="font-bold text-xl mb-4">Articles</h2>
+    <ul class="grid sm:grid-cols-2 gap-8">
+      @forelse ($articles as $article)
+      <li>
+        <x-article-card :article="$article" />
+      </li>
+      @empty
+      <div class="text-gray-700">Aucun article</div>
+      @endforelse
+    </ul>
+  </div>
+
+  <div class="mt-8">
+    <h2 class="font-bold text-xl mb-4">Commentaires</h2>
+
+    <div class="flex-col space-y-4">
+      @forelse ($comments as $comment)
+      <div class="flex bg-white rounded-md shadow p-4 space-x-4">
+        <div class="flex justify-start items-start h-full">
+          <x-avatar class="h-10 w-10" :user="$comment->user" />
+        </div>
+        <div class="flex flex-col justify-center w-full space-y-4">
+          <div class="flex justify-between">
+            <div class="flex space-x-4 items-center justify-center">
+              <div class="flex flex-col justify-center">
+                <div class="text-gray-700">{{ $comment->user->name }}</div>
+                <div class="text-gray-500 text-sm">
+                  {{ $comment->created_at->diffForHumans() }}
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-center">
+              @can('delete', $comment)
+              <button
+                x-data="{ id: {{ $comment->id }} }"
+                x-on:click.prevent="window.selected = id; $dispatch('open-modal', 'confirm-comment-deletion');"
+                type="submit"
+                class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow"
+              >
+                <x-heroicon-o-trash class="h-5 w-5" />
+              </button>
+              @endcan
+            </div>
+          </div>
+          <div class="flex flex-col justify-center w-full text-gray-700">
+            <p class="border bg-gray-100 rounded-md p-4">
+              {{ $comment->body }}
+            </p>
+          </div>
+        </div>
+      </div>
+      @empty
+      <div class="flex bg-white rounded-md shadow p-4 space-x-4">
+        Aucun commentaire pour l'instant
+      </div>
+      @endforelse
+    </div>
+    <x-modal name="confirm-comment-deletion" focusable>
+      <form
+        method="post"
+        onsubmit="event.target.action= '/articles/{{ $article->id ?? 1 }}/comments/' + window.selected"
+        class="p-6"
+      >
+        @csrf @method('DELETE')
+
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+          Êtes-vous sûr de vouloir supprimer ce commentaire ?
+        </h2>
+
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          Cette action est irréversible. Toutes les données seront supprimées.
+        </p>
+
+        <div class="mt-6 flex justify-end">
+          <x-secondary-button x-on:click="$dispatch('close')">
+            Annuler
+          </x-secondary-button>
+
+          <x-danger-button class="ml-3" type="submit">
+            Supprimer
+          </x-danger-button>
+        </div>
+      </form>
+    </x-modal>
+  </div>
+</x-guest-layout>
+```
+
+Nous pouvons maintenant ajouter des liens vers le profil de l'utilisateur dans les articles et les commentaires dans la vue `article.show` :
+
+```html
+<x-guest-layout>
+  <h1 class="font-bold text-xl mb-4 capitalize">{{ $article->title }}</h1>
+
+  <div class="mb-4 text-xs text-gray-500">
+    {{ $article->published_at->diffForHumans() }}
+  </div>
+
+  <div class="flex items-center justify-center">
+    <img
+      src="{{ asset('storage/' . $article->img_path) }}"
+      alt="illustration de l'article"
+      class="rounded shadow aspect-auto object-cover object-center"
+    />
+  </div>
+
+  <div class="mt-4">{!! \nl2br($article->body) !!}</div>
+
+  <a
+    class="flex mt-8 hover:-translate-y-1 transition
+    "
+    href="{{ route('profile.show', $article->user) }}"
+  >
+    <x-avatar class="h-20 w-20" :user="$article->user" />
+    <div class="ml-4 flex flex-col justify-center">
+      <div class="text-gray-700">{{ $article->user->name }}</div>
+      <div class="text-gray-500">{{ $article->user->email }}</div>
+    </div>
+  </a>
+
+  <div class="mt-8 flex items-center justify-center">
+    <a
+      href="{{ route('front.articles.index') }}"
+      class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow"
+    >
+      Retour à la liste des articles
+    </a>
+  </div>
+
+  <div class="mt-8">
+    <h2 class="font-bold text-xl mb-4">Commentaires</h2>
+
+    <div class="flex-col space-y-4">
+      @forelse ($article->comments as $comment)
+      <div class="flex bg-white rounded-md shadow p-4 space-x-4">
+        <a
+          class="flex justify-start items-start h-full"
+          href="{{ route('profile.show', $comment->user) }}"
+        >
+          <x-avatar class="h-10 w-10" :user="$comment->user" />
+        </a>
+        <div class="flex flex-col justify-center w-full space-y-4">
+          <div class="flex justify-between">
+            <div class="flex space-x-4 items-center justify-center">
+              <div class="flex flex-col justify-center">
+                <a
+                  class="text-gray-700"
+                  href="{{ route('profile.show', $comment->user) }}"
+                >
+                  {{ $comment->user->name }}
+                </a>
+                <div class="text-gray-500 text-sm">
+                  {{ $comment->created_at->diffForHumans() }}
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-center">
+              @can('delete', $comment)
+              <button
+                x-data="{ id: {{ $comment->id }} }"
+                x-on:click.prevent="window.selected = id; $dispatch('open-modal', 'confirm-comment-deletion');"
+                type="submit"
+                class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow"
+              >
+                <x-heroicon-o-trash class="h-5 w-5" />
+              </button>
+              @endcan
+            </div>
+          </div>
+          <div class="flex flex-col justify-center w-full text-gray-700">
+            <p class="border bg-gray-100 rounded-md p-4">
+              {{ $comment->body }}
+            </p>
+          </div>
+        </div>
+      </div>
+      @empty
+      <div class="flex bg-white rounded-md shadow p-4 space-x-4">
+        Aucun commentaire pour l'instant
+      </div>
+      @endforelse @auth
+      <form
+        action="{{ route('front.articles.comments.add', $article) }}"
+        method="POST"
+        class="flex bg-white rounded-md shadow p-4"
+      >
+        @csrf
+        <div class="flex justify-start items-start h-full mr-4">
+          <x-avatar class="h-10 w-10" :user="auth()->user()" />
+        </div>
+        <div class="flex flex-col justify-center w-full">
+          <div class="text-gray-700">{{ auth()->user()->name }}</div>
+          <div class="text-gray-500 text-sm">{{ auth()->user()->email }}</div>
+          <div class="text-gray-700">
+            <textarea
+              name="body"
+              id="body"
+              rows="4"
+              placeholder="Votre commentaire"
+              class="w-full rounded-md shadow-sm border-gray-300 bg-gray-100 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 mt-4"
+            ></textarea>
+          </div>
+          <div class="text-gray-700 mt-2 flex justify-end">
+            <button
+              type="submit"
+              class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow"
+            >
+              Ajouter un commentaire
+            </button>
+          </div>
+        </div>
+      </form>
+      @else
+      <div
+        class="flex bg-white rounded-md shadow p-4 text-gray-700 justify-between items-center"
+      >
+        <span> Vous devez être connecté pour ajouter un commentaire </span>
+        <a
+          href="{{ route('login') }}"
+          class="font-bold bg-white text-gray-700 px-4 py-2 rounded shadow-md"
+          >Se connecter</a
+        >
+      </div>
+      @endauth
+    </div>
+    <x-modal name="confirm-comment-deletion" focusable>
+      <form
+        method="post"
+        onsubmit="event.target.action= '/articles/{{ $article->id }}/comments/' + window.selected"
+        class="p-6"
+      >
+        @csrf @method('DELETE')
+
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+          Êtes-vous sûr de vouloir supprimer ce commentaire ?
+        </h2>
+
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          Cette action est irréversible. Toutes les données seront supprimées.
+        </p>
+
+        <div class="mt-6 flex justify-end">
+          <x-secondary-button x-on:click="$dispatch('close')">
+            Annuler
+          </x-secondary-button>
+
+          <x-danger-button class="ml-3" type="submit">
+            Supprimer
+          </x-danger-button>
+        </div>
+      </form>
+    </x-modal>
+  </div>
+</x-guest-layout>
+```
+
+Les visiteurs peuvent maintenant accéder aux profils des utilisateurs en cliquant sur leurs noms ou avatars.
+
+## Afficher des alertes (toasts)
+
+## Erreurs et dates en français
+
 ## Code source
 
 Le code source de ce tutoriel est disponible sur GitHub : [https://github.com/opmvpc/blog-cours](https://github.com/opmvpc/blog-cours)
